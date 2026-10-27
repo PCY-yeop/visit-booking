@@ -1,5 +1,5 @@
 /* 예약정리 서비스워커 — 앱 파일 캐시(오프라인 실행) + CDN 라이브러리 캐시 */
-const CACHE = 'reserve-sms-v25';
+const CACHE = 'reserve-sms-v26';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

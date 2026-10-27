@@ -405,6 +405,7 @@ function openSheet(){
   $('frm').classList.remove('on');
   $('del-btn').style.display='none';
   ['f-site','f-date','f-time','f-name','f-phone'].forEach(i=>$(i).value='');
+  $('raw').value='';
   histPush();$('sheet').classList.add('on');
 }
 function closeSheet(){$('sheet').classList.remove('on');histPop();}
@@ -576,8 +577,8 @@ function renderBoard(){
   const by=st=>[...items].filter(x=>x.status===st).sort((a2,b2)=>startOf(b2).localeCompare(startOf(a2)));
   const cx=by('canceled'),dn=by('done'),ct=by('contract');
   $('sec-cancel').innerHTML=cx.length?cx.map(x=>card(x,'cancel')).join(''):`<div class="empty">방문취소 기록이 없습니다.<br>목록의 체크 버튼에서 방문취소를 지정하면<br>이곳으로 옮겨집니다.</div>`;
-  $('sec-done').innerHTML=dn.length?dn.map(x=>card(x,'done')).join(''):`<div class="empty">방문완료 기록이 없습니다.<br>목록의 체크 버튼에서 방문완료를 지정하면<br>이곳으로 옮겨집니다.</div>`;
-  $('sec-contract').innerHTML=ct.length?ct.map(x=>card(x,'contract')).join(''):`<div class="empty">계약완료 기록이 없습니다.<br>목록의 체크 버튼에서 계약완료를 지정하면<br>이곳으로 옮겨집니다.</div>`;
+  $('sec-done').innerHTML=dn.length?dn.map(x=>card(x,'done')).join(''):`<div class="empty">방문 완료 기록이 없습니다.<br>목록의 체크 버튼에서 방문완료를 지정하면<br>이곳으로 옮겨집니다.</div>`;
+  $('sec-contract').innerHTML=ct.length?ct.map(x=>card(x,'contract')).join(''):`<div class="empty">계약 완료 기록이 없습니다.<br>목록의 체크 버튼에서 계약완료를 지정하면<br>이곳으로 옮겨집니다.</div>`;
 }
 
 /* ────────── 전체 렌더 ────────── */
