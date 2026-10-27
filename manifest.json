@@ -1,0 +1,13 @@
+{
+  "name": "예약정리",
+  "short_name": "예약정리",
+  "description": "받은 예약 문자를 붙여넣으면 자동으로 정리하고 캘린더에 기록합니다",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F1EFE9",
+  "theme_color": "#0E6B4F",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

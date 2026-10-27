@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>예약정리 — 문자 붙여넣기 예약 장부</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0E6B4F">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1EFE9; --card:#FFFFFF; --ink:#20241F; --sub:#6E756D; --line:#E3E0D5;
+  --green:#0E6B4F; --deep:#0B4A37; --green-soft:#E4EFE7;
+  --red:#C25543; --red-soft:#F7E9E4;
+  --amber:#A8742C; --amber-soft:#F6EEDD;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Pretendard Variable',Pretendard,sans-serif;color:var(--ink);background:#E7E4DB;min-height:100dvh;display:flex;justify-content:center}
+.num{font-variant-numeric:tabular-nums}
+#frame{width:100%;max-width:430px;min-height:100dvh;background:var(--bg);display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(30,40,30,.10)}
+@media(min-width:920px){
+  #frame{max-width:1080px;margin:20px auto;min-height:calc(100dvh - 40px);border-radius:26px;overflow:hidden}
+}
+@media(min-width:520px) and (max-width:919px){#frame{margin:20px auto;min-height:calc(100dvh - 40px);border-radius:26px;overflow:hidden}}
+@media(min-width:920px){#frame{max-width:1080px}}
+
+/* 헤더 */
+header{position:sticky;top:0;z-index:10;background:var(--bg);padding:16px 18px 10px;display:flex;align-items:center;gap:10px}
+header .logo{width:34px;height:34px;border-radius:10px;background:var(--deep);display:grid;place-items:center;flex:none}
+header h1{font-family:'Gowun Batang',serif;font-size:20px;font-weight:700;letter-spacing:-.2px;flex:1}
+header button{font:inherit;font-size:12px;font-weight:700;color:var(--sub);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 11px;cursor:pointer}
+header button.install{color:var(--green);border-color:var(--green)}
+
+/* 상태 지정 버튼 — 4개 동일 구조, 상태색만 구분 */
+.st-btn{width:100%;font:inherit;font-size:14px;font-weight:800;padding:12px;border-radius:11px;border:1.5px solid;background:var(--card);cursor:pointer}
+.st-btn:active{transform:scale(.98)}
+.st-btn.p{border-color:var(--green);color:var(--green)}
+.st-btn.d{border-color:var(--deep);color:var(--deep)}
+.st-btn.c{border-color:var(--amber);color:var(--amber)}
+.st-btn.x{border-color:var(--red);color:var(--red)}
+/* 섹션 메뉴 버튼 (1행 50/50 · 2행 1/3) */
+.menu-row{display:grid;gap:10px;margin-top:10px}
+.menu-row.r1{grid-template-columns:1fr 1fr}
+.menu-row.r2{grid-template-columns:1fr 1fr 1fr}
+.menu-tile{font:inherit;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;box-shadow:0 1px 2px rgba(30,40,30,.05)}
+.menu-tile .mt{font-family:'Gowun Batang',serif;font-size:14.5px;font-weight:700;color:var(--ink)}
+.menu-tile.on{border-color:var(--deep);background:var(--deep)}
+.menu-tile.on .mt{color:#fff}
+.sec-line{font-size:11px;font-weight:800;color:var(--sub);margin:12px 2px 0}
+.page{display:none}
+.page.on{display:block;padding:2px 2px 0}
+
+
+
+main{flex:1;padding:0 12px 110px;overflow:visible}
+h2.sec{font-family:'Gowun Batang',serif;font-size:15px;font-weight:700;color:var(--deep);margin:14px 4px 8px;display:flex;align-items:center;gap:8px}
+h2.sec .cnt{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:11px;font-weight:800;background:var(--green-soft);color:var(--green);border-radius:99px;padding:3px 8px}
+
+.filterchip{display:none;align-items:center;gap:6px;margin:8px 2px 0;font-size:12.5px;font-weight:700;color:#fff;background:var(--green);border:none;border-radius:99px;padding:6px 12px;cursor:pointer}
+.filterchip.on{display:inline-flex}
+
+/* 예약 행 */
+.r-item{background:var(--card);border-radius:14px;margin-top:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(30,40,30,.05);cursor:pointer;border:1.5px solid transparent}
+.r-item:active{border-color:var(--green)}
+.r-item.done{opacity:.55}
+.tchip{flex:none;width:auto;min-width:70px;max-width:94px;background:var(--deep);color:#fff;border-radius:9px;text-align:center;padding:7px 6px;line-height:1.25;overflow:hidden}
+.tchip .d{font-size:10.5px;font-weight:600;opacity:.75;display:block}
+.tchip .tt{font-size:10.5px;font-weight:800;display:block;word-break:break-word;letter-spacing:-.2px}
+.r-info{flex:1;min-width:0}
+.r-name{font-size:15px;font-weight:800;display:flex;align-items:center;gap:6px}
+.r-name .site{font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border-radius:6px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.r-meta{font-size:12.5px;color:var(--sub);margin-top:2px}
+.r-acts{display:flex;flex-direction:row;align-items:center;gap:7px}
+.r-acts button{font:inherit;font-size:11px;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:8px;padding:5px 9px;cursor:pointer}
+.stbtn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--green);background:var(--card);color:var(--green);cursor:pointer;display:grid;place-items:center}
+.stbtn:active{background:var(--green-soft)}
+.stbtn.memoed{background:var(--green);color:#fff}
+.badge-cx{font-size:10px;font-weight:800;color:var(--red);background:var(--red-soft);border-radius:6px;padding:2px 6px}
+.r-review{font-size:12px;color:var(--deep);margin-top:3px;line-height:1.5}
+.r-review .lb{font-weight:800;color:var(--green)}
+.r-review .cx{color:var(--red);font-weight:800}
+.memo-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.memo-tabs button{font:inherit;font-size:12.5px;font-weight:800;padding:9px 0;border-radius:9px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer}
+.memo-tabs button.on{background:var(--deep);border-color:var(--deep);color:#fff}
+#msheet textarea{width:100%;font:inherit;font-size:13.5px;line-height:1.6;padding:12px 14px;border:1.5px dashed #C9C5B8;border-radius:12px;height:110px;min-height:110px;max-height:110px;resize:none;background:var(--card);outline:none;font-family:inherit}
+#msheet textarea:focus{border-color:var(--green);border-style:solid}
+.past{filter:grayscale(.4)}
+
+/* 캘린더 */
+.cal{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(30,40,30,.05)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head .mon{font-family:'Gowun Batang',serif;font-size:18px;font-weight:700}
+.cal-head button{font:inherit;width:32px;height:32px;border-radius:9px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;font-weight:800}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-grid .hd{font-size:10.5px;font-weight:800;color:var(--sub);text-align:center;padding:4px 0}
+.cal-grid .hd.sun{color:var(--red)}
+.cell{position:relative;min-height:46px;border-radius:9px;background:transparent;border:1.5px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:4px}
+.cell:hover{background:var(--bg)}
+.cell.out{opacity:.32}
+.cell.today .dn{background:var(--deep);color:#fff}
+.cell.sel{border-color:var(--green);background:var(--green-soft)}
+.cell .dn{font-size:12.5px;font-weight:700;width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.cell .cn{font-size:9px;font-weight:800;color:var(--green);line-height:1;margin-top:1px}
+.cell .tm{font-size:8.5px;font-weight:800;color:var(--green);line-height:1}
+.daypanel{margin-top:10px;display:none}
+.daypanel.on{display:block}
+.daypanel .dp-h{font-size:13px;font-weight:800;margin:2px 2px 6px;color:var(--deep)}
+
+/* 빈 상태 */
+.empty{text-align:center;color:var(--sub);font-size:13px;line-height:1.8;padding:36px 12px;border:1.5px dashed var(--line);border-radius:14px;margin-top:10px;background:rgba(255,255,255,.5)}
+.empty b{color:var(--green)}
+
+/* FAB */
+.fab{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:15;background:var(--deep);color:#fff;border:none;border-radius:99px;padding:15px 26px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(11,74,55,.35);display:flex;align-items:center;gap:8px}
+@media(min-width:920px){.fab{left:auto;right:34px;transform:none}}
+.fab:active{transform:translateX(-50%) scale(.97)}
+#frame:not(.in) .fab{display:none}
+@media(min-width:920px){.fab:active{transform:scale(.97)}}
+
+/* 시트 */
+#sheet,#ssheet,#msheet{position:fixed;inset:0;z-index:30;display:none}
+#sheet.on,#ssheet.on,.on,#msheet.on{display:block}
+#sheet .dim,#ssheet .dim, .dim,#msheet .dim{position:absolute;inset:0;background:rgba(30,40,30,.45)}
+#sheet .panel,#ssheet .panel, .panel,#msheet .panel{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-radius:22px 22px 0 0;padding:18px 20px 30px;animation:up .25s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto}
+@media(min-width:520px){#sheet .panel,#ssheet .panel, .panel,#msheet .panel{border-radius:22px;bottom:50%;transform:translate(-50%,50%)}}
+@media(min-width:920px){#sheet .panel{max-width:560px}}
+@keyframes up{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
+.grab{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 14px}
+.sl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sl-head h3{font-family:'Gowun Batang',serif;font-size:17px}
+.sl-head button{font:inherit;font-size:12px;font-weight:700;color:var(--sub);background:none;border:none;cursor:pointer}
+.sl-note{font-size:12.5px;color:var(--sub);line-height:1.6;margin-bottom:10px}
+.sl-note b{color:var(--green)}
+textarea#raw{width:100%;font:inherit;font-size:13.5px;line-height:1.6;padding:12px 14px;border:1.5px dashed #C9C5B8;border-radius:12px;min-height:110px;resize:vertical;background:var(--card);outline:none;font-family:inherit}
+textarea#raw:focus{border-color:var(--green);border-style:solid}
+.sl-actions{display:flex;gap:8px;margin:10px 0 4px}
+.sl-actions .btn{flex:1}
+.btn{font:inherit;font-size:14px;font-weight:800;padding:12px;border-radius:11px;border:none;cursor:pointer}
+.btn-primary{background:var(--deep);color:#fff}
+.btn-ghost{background:var(--card);border:1.5px solid var(--line);color:var(--sub)}
+.frm{display:none;flex-direction:column;gap:10px;margin-top:12px}
+.frm.on{display:flex}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f input{width:100%}
+.f input[type=date]{-webkit-min-logical-width:100%;min-width:100%}
+.f label{font-size:11.5px;font-weight:800;color:var(--sub)}
+.f input{font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);outline:none}
+.f input:focus{border-color:var(--green)}
+.parsed-ok{display:none;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--green);margin-top:8px}
+.parsed-ok.on{display:flex}
+
+/* 설치 안내 (아이폰 등 브라우저 설치 미지원 시 안내용) */
+#install-ios{display:none;font-size:12.5px;color:var(--deep);line-height:1.7}
+
+/* 로그인 화면 */
+#view-login{position:absolute;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:32px 28px;gap:12px}
+#view-login.hide{display:none}
+.lg-mark{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px}
+.lg-mark .book{width:64px;height:64px;border-radius:18px;background:var(--deep);display:grid;place-items:center;box-shadow:0 10px 22px rgba(11,74,55,.30)}
+.lg-mark h1{font-family:'Gowun Batang',serif;font-size:24px;font-weight:700}
+.lg-mark p{font-size:13px;color:var(--sub)}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f input{width:100%}
+.f input[type=date]{-webkit-min-logical-width:100%;min-width:100%}
+.f label{font-size:11.5px;font-weight:800;color:var(--sub)}
+.f input{font:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);outline:none}
+.f input:focus{border-color:var(--green)}
+.btn{font:inherit;font-size:15px;font-weight:800;padding:13px;border-radius:11px;border:none;cursor:pointer}
+.btn-primary{background:var(--deep);color:#fff}
+.btn-ghost{background:var(--card);border:1.5px solid var(--line);color:var(--sub)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn-danger{background:var(--red-soft);color:var(--red)}
+.lg-err{font-size:13px;color:var(--red);text-align:center;min-height:18px}
+.lg-note{font-size:12px;color:var(--sub);text-align:center;line-height:1.7}
+
+#toast{position:fixed;bottom:92px;left:50%;transform:translate(-50%,14px);background:var(--ink);color:#fff;font-size:13.5px;font-weight:700;padding:11px 20px;border-radius:99px;opacity:0;transition:.25s;z-index:50;pointer-events:none;white-space:nowrap}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2.5px solid var(--green);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="frame">
+  <!-- 로그인 화면 (첫 페이지) -->
+  <div id="view-login">
+    <div class="lg-mark">
+      <div class="book"><img src="data:image/png;base64,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" alt="예약정리 로고" style="width:100%;height:100%;border-radius:18px;display:block"></div>
+      <h1>예약정리</h1>
+      <p id="lg-sub">받은 예약 문자를 그대로 붙여넣으면 정리됩니다</p>
+    </div>
+    <div class="f"><label>아이디</label><input id="lg-id" type="text" placeholder="예) minsu" autocomplete="username"></div>
+    <div class="f"><label>비밀번호 (6자 이상)</label><input id="lg-pass" type="password" placeholder="••••••" autocomplete="current-password"></div>
+    <div class="lg-err" id="lg-err"></div>
+    <button class="btn btn-primary" id="lg-btn" onclick="tryLogin()">로그인</button>
+    <button class="btn btn-ghost" id="lg-mode" onclick="toggleMode()">계정이 없나요? 회원가입</button>
+    <p class="lg-note" id="lg-note"></p>
+  </div>
+
+  <header>
+    <div class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAFL0lEQVR4nO3czVHbXBiG4WPm64EOWNBNqkgVWaWKVJFuWNABVfAtMmYIMUaWjn7e81zXTJbBsvTeOpKRObWd3T8+vO69Dezn5en5tOfrb/7iBp5rtg5ikxcz9MyxRQyrvoDBp4c1Q1jlBxt81rBGCF1/oMFnCz1D6PKDDD576BHC3dIfYPjZS4/ZWxSA4WdvS2dw1hJi8DmiOZdEN68Ahp+jmjObNwVg+Dm6W2d0cgCGnypumdVJARh+qpk6s4s/BoXKvgzA2Z+qpszu1QAMP9V9NcOfBmD4GcW1WXYPQLSLATj7M5rPZtoKQLR/AnD2Z1SXZtsKQLS/AnD2Z3QfZ9wKQLS3AJz9SfF+1q0ARBMA0e5ac/lDnvPMWwGIJgCiCYBoJ9f/JLMCEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEO2/vTegt++/f+y9CUP79e3n3pvQ1RCPQxv6fYwQQ/lLIMO/nxH2fekARjgA1VU/BmUDqL7jR1L5WJQMoPIOH1XVY1IugKo7OkHFY1MqgIo7OE21YzTc7wFaG+PjuSOqNtxTlFoBpjD86xlx35YJYMrZZ8QDdDRT9nGllaJMAF8x/NsZaV8PEwDMIQCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIg2pDfB/jM1k8pjvTQ2KisAEQTANEEQDQBEC3qJthNKR9ZAYgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiRT0KUemvFl/iUY7+rABEEwDRBEA0ARAt6ibYTSQfWQGIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAokU9ClH9+wA9eSzkDysA0QRANAEQTQBEi7oJduPHR1YAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIFrUs0Bs59KXj474LJYAuMmSb9V9/L9HCEIATLLG10nPP3PPEATAp7b6DvX719k6BjfBXLTXHxDY+nVP948Pr5u+4kxTdswRrimrO9JfztjieJZZAabsjCMdvIqOtv+22J4yAUx1tINYxVH329rbVeYSqLXjHiTWt9blUKkVwDV+rrVOfqUCaE0EydaIoFwArYkgWe8ISgbQmgiS9YygbACtiSBZrwhKB9CaCI7m17efb/8qKB9Aa/V2On30WAWGexhOBJeN+juU779/LDrmQ6wAMJcAiCaAAKNe/pwteX8CIJoABjf62f9s7vsUANEEQDQBEE0AA0u5/j+b834FQDQBEE0ARBvuYTiOY+5Dalveu1gBiCYAuqr2yZNLILqrFIEVgGgCIJoAiCaAgaV9P3rO+xUA0QRANAEQTQCDS7kPmPs+716enk+dtwVKeHl6PlkBAoy+CvjLcDCTAIh219qfa6G9N4R1jXoZNPd9nWfeChBktAh6vB8BEO0tAJdBGUZZBZa8j/ezbgUIVD2Cntv/VwBWgRxVI1i63R9n3AoQrFoEa2zvPwFYBbJUiaDHdl6abSsAh49gze27GIBVIM9RI+i1XZ/NtBWAN0eLYIvtuXqmv398eF19CzikPf+2T+/Bv3ZFc3UFcCmUa6/VYMvhb+2LFeDMSsCaK8JasU05gQuAm/QMYe1VplsArYmAy24JYsvLqqmX7zdd44uACm65d73pY1A3xRzdrTN68+8BRMBRzZnNRcPskogjWHJSXvSbYKsBe1s6g4sfhRABe+kxe12H1yURW+h50l3l7C0E1rDG1caqly9CoIc1L7M3uX4XAnNscX+5+Q2sGLhm6w9Vdv8ERxDZ9v4U8X/IMnhBlh0icwAAAABJRU5ErkJggg==" alt="예약정리" style="width:100%;height:100%;border-radius:10px;display:block"></div>
+    <h1>예약정리</h1>
+    <button class="install" id="install-btn">앱 설치</button>
+    <button onclick="logoutApp()">로그아웃</button>
+  </header>
+
+  <main>
+  <nav class="menu-row r1" aria-label="보기 선택">
+    <button class="menu-tile on" id="mt-list" onclick="setSec('list')"><span class="mt">방문예정</span></button>
+    <button class="menu-tile" id="mt-cal" onclick="setSec('cal')"><span class="mt">캘린더</span></button>
+  </nav>
+  <nav class="menu-row r2" aria-label="상태 칸 선택">
+    <button class="menu-tile" id="mt-cancel" onclick="setSec('cancel')"><span class="mt">방문취소</span></button>
+    <button class="menu-tile" id="mt-done" onclick="setSec('done')"><span class="mt">방문완료</span></button>
+    <button class="menu-tile" id="mt-contract" onclick="setSec('contract')"><span class="mt">계약</span></button>
+  </nav>
+  <div id="sec-wrap">
+    <section class="page on" id="sec-list"></section>
+    <section class="page" id="sec-cal">
+      <div class="cal">
+        <div class="cal-head">
+          <button onclick="calMove(-1)" aria-label="이전 달">‹</button>
+          <span class="mon num" id="cal-title"></span>
+          <button onclick="calMove(1)" aria-label="다음 달">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="daypanel" id="daypanel"></div>
+    </section>
+    <section class="page" id="sec-cancel"></section>
+    <section class="page" id="sec-done"></section>
+    <section class="page" id="sec-contract"></section>
+  </div>
+</main>
+
+  <button class="fab" onclick="openSheet()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    문자 붙여넣기
+  </button>
+</div>
+
+<!-- 시트 -->
+<div id="sheet" onclick="if(event.target===this)closeSheet()">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div class="sl-head">
+      <h3 id="sl-title">문자 붙여넣기</h3>
+      <button onclick="closeSheet()">닫기</button>
+    </div>
+    <p class="sl-note" id="sl-note">받은 문자를 <b>그대로 복사해서 붙여넣고</b> [문자 분석]을 누르면 현장·날짜·시간·이름·연락처가 자동으로 분리됩니다.</p>
+    <textarea id="raw" placeholder="[Web발신]
+현장명
+날짜 : 2026-01-01
+시간 : 12:00~13:00
+이름 : 홍길동
+연락처 : 010-1234-5678"></textarea>
+    <div class="sl-actions">
+      <button class="btn btn-ghost" onclick="fillSample()">샘플로 채워보기</button>
+      <button class="btn btn-primary" onclick="analyze()">문자 분석</button>
+    </div>
+    <div class="parsed-ok" id="p-ok">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      문자를 분석했습니다 — 내용을 확인하고 저장하세요
+    </div>
+    <div class="frm" id="frm">
+      <div class="f"><label>현장명</label><input id="f-site" type="text"></div>
+      <div class="f-grid">
+        <div class="f"><label>날짜</label><input id="f-date" type="date"></div>
+        <div class="f"><label>시간대</label><input id="f-time" type="text" placeholder="17:00~18:00"></div>
+      </div>
+      <div class="f-grid">
+        <div class="f"><label>이름</label><input id="f-name" type="text"></div>
+        <div class="f"><label>연락처</label><input id="f-phone" type="tel" placeholder="010-0000-1111"></div>
+      </div>
+      <div class="sl-actions" style="margin-top:4px">
+        <button class="btn btn-danger" id="del-btn" style="display:none" onclick="delItem()">삭제</button>
+        <button class="btn btn-primary" style="flex:2" onclick="saveItem()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 백업은 로그인 도입 시 다시 제공 예정 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<!-- 상태 지정 시트 (방문완료 / 방문취소) -->
+<div id="ssheet" onclick="if(event.target===this)closeS()">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div class="sl-head"><h3>예약 상태 지정</h3><button onclick="closeS()">닫기</button></div>
+    <p class="sl-note" id="ss-sub"></p>
+    <div class="sl-actions" style="flex-direction:column;gap:10px">
+      <button class="st-btn p" onclick="setStatus('pending')">방문예정으로 처리</button>
+      <button class="st-btn d" onclick="setStatus('done')">방문완료로 처리</button>
+      <button class="st-btn c" onclick="setStatus('contract')">계약완료로 처리</button>
+      <button class="st-btn x" onclick="setStatus('canceled')">방문취소로 처리</button>
+    </div>
+  </div>
+</div>
+
+<!-- 메모 시트 -->
+<div id="msheet" onclick="if(event.target===this)closeS()">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div class="sl-head"><h3>메모</h3><button onclick="closeS()">닫기</button></div>
+    <p class="sl-note" id="ms-sub"></p>
+    <div class="memo-tabs" id="memo-tabs">
+      <button class="on" data-t="before" onclick="switchMemoTab('before')">방문전</button>
+      <button data-t="after" onclick="switchMemoTab('after')">방문후</button>
+      <button data-t="contract" onclick="switchMemoTab('contract')">계약</button>
+    </div>
+    <textarea id="m-text" placeholder="메모할 내용을 작성해주세요."></textarea>
+    <div class="sl-actions"><button class="btn btn-primary" style="flex:1" onclick="saveMemo()">메모 저장</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ────────── 데이터 (계정별 저장) ────────── */
+let uid='';
+const itemsKey=()=>'rsms.items.'+uid;
+let items=[];
+function loadItems(){
+  /* 기존 로컬 기록(rsms.v1.items)이 있으면 로그인한 계정으로 이관 */
+  if(uid&&localStorage.getItem(itemsKey())===null){
+    const old=localStorage.getItem('rsms.v1.items');
+    if(old){localStorage.setItem(itemsKey(),old);localStorage.removeItem('rsms.v1.items');}
+  }
+  items=JSON.parse(localStorage.getItem(itemsKey())||'[]');
+  items.forEach(it=>{if(!it.status)it.status=it.done?'done':'pending';});
+  items.forEach(it=>{if(!it.notes)it.notes={before:it.memo||'',after:it.review||'',contract:''};});  /* 기존 기록 상태 자동 지정 */
+}
+const save=()=>{if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));};
+let editingId=null, selDate=null, calY, calM;
+const $=id=>document.getElementById(id);
+const todayKey=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400);}
+
+/* ────────── 문자 파서 ────────── */
+function normalizeDate(s){
+  if(!s)return '';
+  let m=s.match(/(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})/);
+  if(!m)m=s.match(/(\d{2,4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if(!m)return '';
+  let[,y,mo,d]=m;y=String(y).length===2?'20'+y:y;
+  return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function normalizePhone(s){
+  const n=(s||'').replace(/[^\d]/g,'');
+  if(n.length===11)return n.slice(0,3)+'-'+n.slice(3,7)+'-'+n.slice(7);
+  if(n.length===10)return n.slice(0,3)+'-'+n.slice(3,6)+'-'+n.slice(6);
+  return s||'';
+}
+function parseSms(text){
+  const lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const rest=lines[0]&&/발신/.test(lines[0])?lines.slice(1):lines;
+  const val=re=>{const l=rest.find(x=>re.test(x));return l?l.replace(re,'').replace(/^[\s:：]+/,'').trim():'';};
+  let date=normalizeDate(val(/^날짜/)||'');
+  if(!date){const m=text.match(/\d{4}[.\-\/년]\s?\d{1,2}[.\-\/월]\s?\d{1,2}/);if(m)date=normalizeDate(m[0]);}
+  const time=val(/^시간/);
+  const name=val(/^이름/);
+  const phoneRaw=val(/^연락처|^전화/);
+  let site='';
+  const siteLine=rest.find(x=>!/^날짜|^시간|^이름|^연락처|^전화/.test(x)&&!/\d{4}/.test(x));
+  const sl=val(/^현장/);
+  site=sl||(siteLine||'').replace(/^\[|\]$/g,'');
+  return {site,date,time,name,phone:normalizePhone(phoneRaw)};
+}
+
+/* ────────── 시트 ────────── */
+function openSheet(){
+  editingId=null;
+  $('sl-title').textContent='문자 붙여넣기';
+  $('sl-note').style.display='block';
+  $('raw').style.display='block';
+  document.querySelector('#sheet .sl-actions').style.display='flex';
+  $('p-ok').classList.remove('on');
+  $('frm').classList.remove('on');
+  $('del-btn').style.display='none';
+  ['f-site','f-date','f-time','f-name','f-phone'].forEach(i=>$(i).value='');
+  $('sheet').classList.add('on');
+}
+function closeSheet(){$('sheet').classList.remove('on');}
+function analyze(){
+  const text=$('raw').value.trim();
+  if(!text)return toast('문자를 붙여넣어 주세요');
+  const p=parseSms(text);
+  $('f-site').value=p.site;$('f-date').value=p.date;$('f-time').value=p.time;
+  $('f-name').value=p.name;$('f-phone').value=p.phone;
+  $('p-ok').classList.add('on');$('frm').classList.add('on');
+  if(!p.date)$('f-date').focus();
+}
+function fillSample(){
+  $('raw').value='[Web발신]\n현장명\n날짜 : '+todayKey()+'\n시간 : 12:00~13:00\n이름 : 홍길동\n연락처 : 010-1234-5678';
+  analyze();
+}
+function saveItem(){
+  const rec={site:$('f-site').value.trim(),date:$('f-date').value,time:$('f-time').value.trim(),name:$('f-name').value.trim(),phone:$('f-phone').value.trim(),memo:''};
+  if(!(rec.date&&rec.name))return toast('날짜와 이름은 필수입니다');
+  if(editingId){
+    const it=items.find(x=>x.id===editingId);
+    Object.assign(it,rec);toast('수정했습니다');
+  }else{
+    items.push({id:Date.now(),...rec,status:'pending',notes:{before:'',after:'',contract:''},createdAt:new Date().toISOString()});
+    toast('예약이 기록되었습니다');
+  }
+  save();closeSheet();render();
+}
+function editItem(id){
+  const it=items.find(x=>x.id===id);if(!it)return;
+  editingId=id;
+  $('sl-title').textContent='예약 수정';
+  $('sl-note').style.display='none';
+  $('raw').style.display='none';
+  document.querySelector('#sheet .sl-actions').style.display='none';
+  $('p-ok').classList.remove('on');
+  $('f-site').value=it.site;$('f-date').value=it.date;$('f-time').value=it.time;$('f-name').value=it.name;$('f-phone').value=it.phone;
+  $('frm').classList.add('on');$('del-btn').style.display='block';
+  $('sheet').classList.add('on');
+}
+function delItem(){
+  if(!editingId)return;
+  items=items.filter(x=>x.id!==editingId);
+  save();closeSheet();render();toast('삭제했습니다');
+}
+/* ────────── 상태 지정 & 방문 후기 ────────── */
+let statusId=null,memoId=null,memoTab='before';
+function hasNotes(it){return !!(it.notes&&(it.notes.before||it.notes.after||it.notes.contract));}
+function openMemo(id,ev){
+  ev&&ev.stopPropagation();
+  const it=items.find(x=>x.id===id);if(!it)return;
+  memoId=id;memoTab='before';
+  $('ms-sub').innerHTML=`<b>${it.name}</b> · ${fmtK(it.date)}${it.time?' '+it.time:''}`;
+  switchMemoTab('before',it);
+  $('msheet').classList.add('on');
+}
+function switchMemoTab(t,keep){
+  const cur=items.find(x=>x.id===memoId);
+  if(cur&&!cur.notes)cur.notes={before:'',after:'',contract:''};
+  if(cur&&!keep)cur.notes[memoTab]=$('m-text').value.trim();  /* 전환 전 임시저장 */
+  memoTab=t;
+  document.querySelectorAll('#memo-tabs button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
+  $('m-text').value=(cur&&cur.notes&&cur.notes[t])||'';
+}
+function saveMemo(){
+  const it=items.find(x=>x.id===memoId);if(!it)return;
+  if(!it.notes)it.notes={before:'',after:'',contract:''};
+  it.notes[memoTab]=$('m-text').value.trim();
+  save();closeS();render();toast('메모를 저장했습니다');
+}
+function closeS(){$('ssheet').classList.remove('on');$('msheet').classList.remove('on');}
+function openStatus(id,ev){
+  ev&&ev.stopPropagation();
+  const it=items.find(x=>x.id===id);if(!it)return;
+  statusId=id;
+  $('ss-sub').innerHTML=`<b>${it.name}</b> · ${fmtK(it.date)} ${it.time||''}<br>방문예정 · 방문완료 · 계약완료 · 방문취소 중 지정하세요`;
+  $('ssheet').classList.add('on');
+}
+function setStatus(st){
+  const it=items.find(x=>x.id===statusId);if(!it)return;
+  it.status=st;save();closeS();render();
+  toast(st==='done'?'방문완료 칸으로 옮겼습니다':st==='contract'?'계약 칸으로 옮겼습니다':st==='pending'?'방문예정 칸으로 옮겼습니다':'방문취소 칸으로 옮겼습니다');
+}
+
+/* ────────── 목록 ────────── */
+const WKA=['일','월','화','수','목','금','토'];
+function fmtK(key){const[y,m,d]=key.split('-').map(Number);const w=WKA[new Date(y,m-1,d).getDay()];return `${Number(m)}월 ${Number(d)}일 (${w})`;}
+function addDays(key,n){const[y,m,d]=key.split('-').map(Number);const t=new Date(y,m-1,d+n);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
+const startOf=r=>(r.date||'')+'T'+((r.time||'00:00').match(/\d{1,2}:\d{2}/)||['00:00'])[0];
+const CHK_SVG='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
+const MEMO_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+function cardInfo(it){
+  return `<div class="r-info">
+    <div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}</div>
+    <div class="r-meta num">${it.phone||'연락처 없음'}</div>
+    <div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div>
+  </div>`;
+}
+function actBtns(it,kind){
+  const chk=`<button class="stbtn" title="상태 지정" onclick="openStatus(${it.id},event)" aria-label="상태 지정">${CHK_SVG}</button>`;
+  const memo=`<button class="stbtn${hasNotes(it)?' memoed':''}" title="메모" onclick="openMemo(${it.id},event)" aria-label="메모">${MEMO_SVG}</button>`;
+  return `<div class="r-acts">${memo}${chk}</div>`;
+}
+function card(it,kind){return `<div class="r-item" onclick="editItem(${it.id})">${cardInfo(it)}${actBtns(it,kind)}</div>`;}
+let curSec='list';
+function setSec(t){
+  curSec=t;
+  ['list','cal','cancel','done','contract'].forEach(x=>{
+    $('mt-'+x).classList.toggle('on',x===t);
+    $('sec-'+x).classList.toggle('on',x===t);
+  });
+  if(t==='cal'){renderCal();renderDayPanel();}
+}
+
+
+/* ────────── 캘린더 ────────── */
+function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();renderDayPanel();}
+function byCount(key){return items.filter(x=>x.date===key).length;}
+function renderCal(){
+  $('cal-title').textContent=`${calY}년 ${calM+1}월`;
+  const first=new Date(calY,calM,1).getDay();
+  const dim=new Date(calY,calM+1,0).getDate();
+  const dimPrev=new Date(calY,calM,0).getDate();
+  const tk=todayKey();
+  let html=['일','월','화','수','목','금','토'].map((w,i)=>`<div class="hd${i===0?' sun':''}">${w}</div>`).join('');
+  for(let i=0;i<first;i++)html+=`<div class="cell out"><span class="dn num">${dimPrev-first+i+1}</span></div>`;
+  for(let d=1;d<=dim;d++){
+    const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const c=byCount(key);
+    const evs=items.filter(x=>x.date===key).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
+    const live=evs.filter(x=>x.status!=='canceled').length;
+    html+=`<div class="cell${key===tk?' today':''}${selDate===key?' sel':''}" onclick="pickDay('${key}')" role="button" aria-label="${key}">
+      <span class="dn num">${d}</span>
+      ${live>0?`<span class="cn num">${live}</span>`:''}
+      
+    </div>`;
+  }
+  const tail=(7-((first+dim)%7))%7;
+  for(let i=1;i<=tail;i++)html+=`<div class="cell out"><span class="dn num">${i}</span></div>`;
+  $('cal-grid').innerHTML=html;
+}
+function pickDay(key){
+  selDate=selDate===key?null:key;   /* 캘린더에 머물며 그날 예약을 아래 패널로 확인 */
+  renderCal();renderDayPanel();
+}
+function renderDayPanel(){
+  if(!selDate){$('daypanel').classList.remove('on');return;}
+  const evs=items.filter(x=>x.date===selDate).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
+  $('daypanel').classList.add('on');
+  $('daypanel').innerHTML=`<div class="dp-h">${fmtK(selDate)} 예약 ${evs.length}건</div>`+
+    (evs.length?evs.map(it=>`<div class="r-item" onclick="editItem(${it.id})"><div class="tchip num"><span class="tt">${it.status==='canceled'?'취소':it.time||'시간 미지정'}</span></div><div class="r-info"><div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}${it.status==='done'?'<span class="r-review" style="display:inline"><span class="lb">완료</span></span>':''}</div><div class="r-meta num">${it.phone||''}</div><div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div></div></div>`).join(''):'<div class="empty">이 날짜의 예약이 없습니다.</div>');
+}
+
+/* ────────── 방문취소 · 방문완료 · 계약 칸 ────────── */
+function renderList(){
+  const tk=todayKey();
+  const pend=items.filter(x=>x.status==='pending');
+  const up=pend.filter(x=>x.date>=tk).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
+  const past=pend.filter(x=>x.date<tk).sort((a,b)=>startOf(b).localeCompare(startOf(a)));
+  let html='';
+  if(!items.length)html=`<div class="empty">아직 기록이 없습니다.<br>받은 예약 문자를 <b>문자 붙여넣기</b> 버튼에 그대로 복사해 넣으면<br>현장·날짜·시간·이름·연락처가 자동으로 정리됩니다.</div>`;
+  else if(!up.length&&!past.length)html=`<div class="empty">예정된 예약이 없습니다.</div>`;
+  if(up.length)html+=`<div class="sec-line">예정된 예약 ${up.length}건</div>`+up.map(x=>card(x,'list')).join('');
+  if(past.length)html+=`<div class="sec-line">지나간 예약 ${past.length}건</div>`+past.map(x=>card(x,'list')).join('');
+  $('sec-list').innerHTML=html;
+}
+function renderBoard(){
+  const by=st=>[...items].filter(x=>x.status===st).sort((a2,b2)=>startOf(b2).localeCompare(startOf(a2)));
+  const cx=by('canceled'),dn=by('done'),ct=by('contract');
+  $('sec-cancel').innerHTML=cx.length?cx.map(x=>card(x,'cancel')).join(''):`<div class="empty">취소한 예약이 없습니다.<br>목록의 체크 버튼에서 방문취소를 지정하면 이곳으로 옮겨집니다.</div>`;
+  $('sec-done').innerHTML=dn.length?dn.map(x=>card(x,'done')).join(''):`<div class="empty">방문 완료 기록이 없습니다.<br>목록의 체크 버튼에서 방문완료를 지정하면<br>이곳에 모이고 후기를 남길 수 있습니다.</div>`;
+  $('sec-contract').innerHTML=ct.length?ct.map(x=>card(x,'contract')).join(''):`<div class="empty">계약 완료 기록이 없습니다.<br>목록의 체크 버튼에서 계약완료를 지정하면 이곳으로 옮겨집니다.</div>`;
+}
+
+/* ────────── 전체 렌더 ────────── */
+function render(){
+  renderList();renderBoard();renderCal();renderDayPanel();
+}
+
+
+/* ────────── 백업 함수 (로그인 도입 시 UI와 함께 재사용) ────────── */
+function exportData(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='예약정리-백업-'+todayKey()+'.json';a.click();URL.revokeObjectURL(a.href);
+  toast('백업 파일을 저장했습니다');
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;items=d;save();render();toast('백업을 불러왔습니다');}catch{toast('올바른 백업 파일이 아닙니다');}};
+  r.readAsText(f);
+}
+
+/* ────────── PWA 설치 (상단 [앱 설치] 버튼) ────────── */
+let deferredPrompt=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
+$('install-btn').addEventListener('click',()=>{
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(({outcome})=>{
+      if(outcome==='accepted'){toast('홈 화면에 앱이 설치되었습니다');$('install-btn').style.display='none';}
+      deferredPrompt=null;
+    });
+  }else if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+    toast('사파리 하단 공유 ⬆️ → 홈 화면에 추가');
+  }else{
+    toast('이 브라우저에서는 메뉴의 홈 화면 추가를 이용하세요');
+  }
+});
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+if(matchMedia('(display-mode: standalone)').matches)$('install-btn').style.display='none';
+
+/* ────────── 로그인 (Supabase 계정: 아이디 + 비밀번호 6자 이상) ────────── */
+const SB_URL='https://lmkpwupeinkqbfmhqcrc.supabase.co';
+const SB_KEY='sb_publishable_BrgcLKyjLU7et47zEocZdQ_mNvmFNbo';
+const sb=(typeof supabase!=='undefined')?supabase.createClient(SB_URL,SB_KEY):null;
+let lgMode='login';
+const toEmail=id=>id.includes('@')?id.trim().toLowerCase():id.trim().toLowerCase()+'@yaksucheok.app';
+const toUid=em=>em.split('@')[0];
+function toggleMode(){lgMode=lgMode==='login'?'signup':'login';$('lg-err').textContent='';paintMode();}
+function paintMode(){
+  $('lg-btn').textContent=lgMode==='login'?'로그인':'회원가입';
+  $('lg-mode').textContent=lgMode==='login'?'계정이 없나요? 회원가입':'이미 계정이 있나요? 로그인';
+  $('lg-note').textContent=lgMode==='login'?'등록한 아이디와 비밀번호로 로그인하세요':'아이디는 자유롭게, 비밀번호는 6자 이상';
+}
+function showLogin(){$('view-login').classList.remove('hide');$('lg-err').textContent='';paintMode();}
+  document.getElementById('frame').classList.remove('in');
+function openApp(){loadItems();$('view-login').classList.add('hide');$('lg-pass').value='';render();}
+  document.getElementById('frame').classList.add('in');
+async function tryLogin(){
+  const id=$('lg-id').value.trim(), pw=$('lg-pass').value;
+  if(!id)return $('lg-err').textContent='아이디를 입력하세요';
+  if(pw.length<6)return $('lg-err').textContent='비밀번호는 6자 이상입니다';
+  $('lg-btn').disabled=true;
+  if(!sb){$('lg-err').textContent='인증 서버에 연결할 수 없습니다 — 인터넷 연결을 확인하세요';$('lg-btn').disabled=false;return;}
+  try{
+    if(lgMode==='signup'){
+      const{data,error}=await sb.auth.signUp({email:toEmail(id),password:pw});
+      if(error)throw error;
+      if(data.session){uid=toUid(data.session.user.email);openApp();toast('회원가입 완료 — 환영합니다');}
+      else{toast('가입되었습니다 — 이메일 확인 후 로그인해 주세요');lgMode='login';paintMode();}
+    }else{
+      const{data,error}=await sb.auth.signInWithPassword({email:toEmail(id),password:pw});
+      if(error)throw error;
+      uid=toUid(data.session.user.email);
+      openApp();toast(uid+' 님, 환영합니다');
+    }
+  }catch(e){
+    const m=String((e&&(e.message||e.msg))||e);
+    $('lg-err').textContent=
+      m.includes('Invalid login credentials')?'아이디 또는 비밀번호가 틀렸습니다':
+      m.includes('already registered')?'이미 가입된 아이디입니다':
+      m.includes('not confirmed')?'이메일 확인이 필요합니다 (아래 안내 참고)':
+      m.includes('rate limit')?'잠시 후 다시 시도해주세요':m;
+  }finally{$('lg-btn').disabled=false;}
+}
+async function logoutApp(){
+  try{await sb.auth.signOut();}catch{}
+  uid='';items=[];
+  $('view-login').classList.remove('hide');
+  showLogin();toast('로그아웃했습니다');
+}
+$('lg-pass').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+$('lg-id').addEventListener('keydown',e=>{if(e.key==='Enter')$('lg-pass').focus();});
+
+/* ────────── 초기화 (세션 복원) ────────── */
+{const t=new Date();calY=t.getFullYear();calM=t.getMonth();}
+(async()=>{
+  if(sb)try{
+    const{data}=await sb.auth.getSession();
+    if(data&&data.session){uid=toUid(data.session.user.email);openApp();return;}
+  }catch{}
+  showLogin();render();
+})();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
