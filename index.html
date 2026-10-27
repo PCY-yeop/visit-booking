@@ -30,9 +30,14 @@ body{font-family:'Pretendard Variable',Pretendard,sans-serif;color:var(--ink);ba
 /* 헤더 */
 header{position:sticky;top:0;z-index:10;background:var(--bg);padding:16px 18px 10px;display:flex;align-items:center;gap:10px}
 header .logo{width:34px;height:34px;border-radius:10px;background:var(--deep);display:grid;place-items:center;flex:none}
-header h1{font-family:'Gowun Batang',serif;font-size:20px;font-weight:700;letter-spacing:-.2px;flex:1}
-header button{font:inherit;font-size:12px;font-weight:700;color:var(--sub);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 11px;cursor:pointer}
+header h1{font-family:'Gowun Batang',serif;font-size:20px;font-weight:700;letter-spacing:-.2px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{font:inherit;font-size:12px;font-weight:700;color:var(--sub);background:none;border:1px solid var(--line);border-radius:99px;padding:6px 11px;cursor:pointer;white-space:nowrap}
 header button.install{color:var(--green);border-color:var(--green)}
+.upd{position:fixed;inset:0;z-index:80;display:none;place-items:center;background:rgba(15,23,18,.45);padding:24px}
+.upd.on{display:grid}
+.upd-card{background:#fff;border-radius:20px;padding:26px 22px;width:100%;max-width:300px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.25);animation:updPop .25s ease}
+@keyframes updPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.upd-ic{width:54px;height:54px;margin:0 auto 12px;border-radius:16px;background:rgba(14,107,79,.09);display:grid;place-items:center;color:var(--green)}
 
 /* 상태 지정 버튼 — 4개 동일 구조, 상태색만 구분 */
 .st-btn{width:100%;font:inherit;font-size:14px;font-weight:800;padding:12px;border-radius:11px;border:1.5px solid;background:var(--card);cursor:pointer}
@@ -204,6 +209,7 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
     <div class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAFL0lEQVR4nO3czVHbXBiG4WPm64EOWNBNqkgVWaWKVJFuWNABVfAtMmYIMUaWjn7e81zXTJbBsvTeOpKRObWd3T8+vO69Dezn5en5tOfrb/7iBp5rtg5ikxcz9MyxRQyrvoDBp4c1Q1jlBxt81rBGCF1/oMFnCz1D6PKDDD576BHC3dIfYPjZS4/ZWxSA4WdvS2dw1hJi8DmiOZdEN68Ahp+jmjObNwVg+Dm6W2d0cgCGnypumdVJARh+qpk6s4s/BoXKvgzA2Z+qpszu1QAMP9V9NcOfBmD4GcW1WXYPQLSLATj7M5rPZtoKQLR/AnD2Z1SXZtsKQLS/AnD2Z3QfZ9wKQLS3AJz9SfF+1q0ARBMA0e5ac/lDnvPMWwGIJgCiCYBoJ9f/JLMCEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEO2/vTegt++/f+y9CUP79e3n3pvQ1RCPQxv6fYwQQ/lLIMO/nxH2fekARjgA1VU/BmUDqL7jR1L5WJQMoPIOH1XVY1IugKo7OkHFY1MqgIo7OE21YzTc7wFaG+PjuSOqNtxTlFoBpjD86xlx35YJYMrZZ8QDdDRT9nGllaJMAF8x/NsZaV8PEwDMIQCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIg2pDfB/jM1k8pjvTQ2KisAEQTANEEQDQBEC3qJthNKR9ZAYgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiRT0KUemvFl/iUY7+rABEEwDRBEA0ARAt6ibYTSQfWQGIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAokU9ClH9+wA9eSzkDysA0QRANAEQTQBEi7oJduPHR1YAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIFrUs0Bs59KXj474LJYAuMmSb9V9/L9HCEIATLLG10nPP3PPEATAp7b6DvX719k6BjfBXLTXHxDY+nVP948Pr5u+4kxTdswRrimrO9JfztjieJZZAabsjCMdvIqOtv+22J4yAUx1tINYxVH329rbVeYSqLXjHiTWt9blUKkVwDV+rrVOfqUCaE0EydaIoFwArYkgWe8ISgbQmgiS9YygbACtiSBZrwhKB9CaCI7m17efb/8qKB9Aa/V2On30WAWGexhOBJeN+juU779/LDrmQ6wAMJcAiCaAAKNe/pwteX8CIJoABjf62f9s7vsUANEEQDQBEE0AA0u5/j+b834FQDQBEE0ARBvuYTiOY+5Dalveu1gBiCYAuqr2yZNLILqrFIEVgGgCIJoAiCaAgaV9P3rO+xUA0QRANAEQTQCDS7kPmPs+716enk+dtwVKeHl6PlkBAoy+CvjLcDCTAIh219qfa6G9N4R1jXoZNPd9nWfeChBktAh6vB8BEO0tAJdBGUZZBZa8j/ezbgUIVD2Cntv/VwBWgRxVI1i63R9n3AoQrFoEa2zvPwFYBbJUiaDHdl6abSsAh49gze27GIBVIM9RI+i1XZ/NtBWAN0eLYIvtuXqmv398eF19CzikPf+2T+/Bv3ZFc3UFcCmUa6/VYMvhb+2LFeDMSsCaK8JasU05gQuAm/QMYe1VplsArYmAy24JYsvLqqmX7zdd44uACm65d73pY1A3xRzdrTN68+8BRMBRzZnNRcPskogjWHJSXvSbYKsBe1s6g4sfhRABe+kxe12H1yURW+h50l3l7C0E1rDG1caqly9CoIc1L7M3uX4XAnNscX+5+Q2sGLhm6w9Vdv8ERxDZ9v4U8X/IMnhBlh0icwAAAABJRU5ErkJggg==" alt="예약정리" style="width:100%;height:100%;border-radius:10px;display:block"></div>
     <h1>예약정리</h1>
     <button class="install" id="install-btn">앱 설치</button>
+    <button id="xl-btn" onclick="exportExcel()">엑셀 저장</button>
     <button onclick="logoutApp()">로그아웃</button>
   </header>
 
@@ -320,6 +326,16 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
   </div>
 </div>
 
+<div class="upd" id="upd">
+  <div class="upd-card">
+    <div class="upd-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></div>
+    <b style="font-size:16px">새 버전이 있습니다</b>
+    <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.5">지금 업데이트하면<br>최신 기능이 바로 적용됩니다</p>
+    <button class="btn btn-primary" style="width:100%" onclick="applyUpdate()">지금 업데이트</button>
+    <button style="width:100%;margin-top:8px;background:none;border:none;color:var(--sub);font:inherit;font-size:13px;cursor:pointer" onclick="laterUpdate()">나중에</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -337,7 +353,7 @@ function loadItems(){
   items.forEach(it=>{if(!it.status)it.status=it.done?'done':'pending';});
   items.forEach(it=>{if(!it.notes)it.notes={before:it.memo||'',after:it.review||'',contract:''};});  /* 기존 기록 상태 자동 지정 */
 }
-const save=()=>{if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));};
+const save=()=>{if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));cloudPush();};
 let editingId=null, selDate=null, calY, calM;
 const $=id=>document.getElementById(id);
 const todayKey=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
@@ -427,8 +443,9 @@ function editItem(id){
 }
 function delItem(){
   if(!editingId)return;
-  items=items.filter(x=>x.id!==editingId);
-  save();closeSheet();render();toast('삭제했습니다');
+  const delId=editingId;
+  items=items.filter(x=>x.id!==delId);
+  save();cloudDel(delId);closeSheet();render();toast('삭제했습니다');
 }
 /* ────────── 상태 지정 & 방문 후기 ────────── */
 let statusId=null,memoId=null,memoTab='before';
@@ -595,7 +612,29 @@ $('install-btn').addEventListener('click',()=>{
     toast('이 브라우저에서는 메뉴의 홈 화면 추가를 이용하세요');
   }
 });
-if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+let updWorker=null;
+if('serviceWorker' in navigator){
+  addEventListener('load',async()=>{
+    try{
+      const reg=await navigator.serviceWorker.register('sw.js');
+      if(reg.waiting&&navigator.serviceWorker.controller){updWorker=reg.waiting;$('upd').classList.add('on');}
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;if(!nw)return;
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed'&&navigator.serviceWorker.controller){updWorker=nw;$('upd').classList.add('on');}
+        });
+      });
+      setInterval(()=>reg.update().catch(()=>{}),30*60*1000);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{});});
+    }catch{}
+  });
+  let reloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload();});
+}
+function applyUpdate(){
+  if(updWorker){updWorker.postMessage('SKIP_WAITING');}else{$('upd').classList.remove('on');location.reload();}
+}
+function laterUpdate(){$('upd').classList.remove('on');setTimeout(()=>$('upd').classList.add('on'),30*60*1000);}
 if(matchMedia('(display-mode: standalone)').matches)$('install-btn').style.display='none';
 
 /* ────────── 로그인 (Supabase 계정: 아이디 + 비밀번호 6자 이상) ────────── */
@@ -613,7 +652,7 @@ function paintMode(){
 }
 function showLogin(){$('view-login').classList.remove('hide');$('lg-err').textContent='';paintMode();}
   document.getElementById('frame').classList.remove('in');
-function openApp(){loadItems();$('view-login').classList.add('hide');$('lg-pass').value='';render();}
+function openApp(){loadItems();cloudSync();$('view-login').classList.add('hide');$('lg-pass').value='';render();}
   document.getElementById('frame').classList.add('in');
 async function tryLogin(){
   const id=$('lg-id').value.trim(), pw=$('lg-pass').value;
@@ -660,7 +699,126 @@ $('lg-id').addEventListener('keydown',e=>{if(e.key==='Enter')$('lg-pass').focus(
   }catch{}
   showLogin();render();
 })();
+
+/* ────────── 클라우드 동기화 (Supabase) ────────── */
+let cloudOn=false;
+const cRow=it=>({id:it.id,site:it.site||'',name:it.name||'',phone:it.phone||'',date:it.date||'',time:it.time||'',status:it.status||'pending',notes:it.notes||{before:'',after:'',contract:''},created_at:it.createdAt||new Date().toISOString(),updated_at:it.updatedAt||it.createdAt||new Date().toISOString()});
+const cRev=r=>({id:Number(r.id),site:r.site||'',name:r.name||'',phone:r.phone||'',date:r.date||'',time:r.time||'',status:r.status||'pending',notes:r.notes||{before:'',after:'',contract:''},createdAt:r.created_at,updatedAt:r.updated_at});
+function cloudPush(){
+  if(!sb||!cloudOn||!uid||!items.length)return;
+  sb.from('reservations').upsert(items.map(cRow)).then(r=>{if(r.error)cloudOn=false;}).catch(()=>{cloudOn=false;});
+}
+function cloudDel(id){
+  if(!sb||!cloudOn)return;
+  sb.from('reservations').delete().eq('id',id).then(()=>{},()=>{});
+}
+async function cloudSync(){
+  if(!sb||!uid)return;
+  try{
+    const{data,error}=await sb.from('reservations').select('*');
+    if(error)return;
+    cloudOn=true;
+    const map=new Map((data||[]).map(r=>[Number(r.id),cRev(r)]));
+    const up=[];
+    items.forEach(l=>{
+      const c=map.get(l.id);
+      if(!c){up.push(cRow(l));return;}
+      const lt=l.updatedAt||l.createdAt||'',ct=c.updatedAt||c.createdAt||'';
+      if(lt>ct)up.push(cRow(l));else map.set(l.id,c);
+    });
+    if(up.length){const r=await sb.from('reservations').upsert(up);if(r.error)return;}
+    items=[...map.values()];
+    if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));
+    render();
+  }catch(_){}
+}
+/* ────────── 엑셀 저장 (의존성 없는 최소 XLSX 생성기) ────────── */ /*XLSX_BEGIN*/
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function xlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],cen=[];let off=0;
+  const d=new Date();
+  const dTime=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF;
+  const dDate=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  files.forEach(f=>{
+    const name=enc.encode(f.name),data=f.data,crc=crc32(data);
+    const lh=new ArrayBuffer(30),v=new DataView(lh);
+    v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint16(8,0,true);
+    v.setUint16(10,dTime,true);v.setUint16(12,dDate,true);v.setUint32(14,crc,true);
+    v.setUint32(18,data.length,true);v.setUint32(22,data.length,true);
+    v.setUint16(26,name.length,true);v.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh),name,data);
+    cen.push({name:name,crc:crc,size:data.length,off:off});
+    off+=30+name.length+data.length;
+  });
+  const cdStart=off;let cdSize=0;
+  cen.forEach(c=>{
+    const ch=new ArrayBuffer(46),v=new DataView(ch);
+    v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);v.setUint16(8,0x0800,true);v.setUint16(10,0,true);
+    v.setUint16(12,dTime,true);v.setUint16(14,dDate,true);v.setUint32(16,c.crc,true);
+    v.setUint32(20,c.size,true);v.setUint32(24,c.size,true);v.setUint16(28,c.name.length,true);
+    v.setUint16(30,0,true);v.setUint16(32,0,true);v.setUint16(34,0,true);v.setUint16(36,0,true);
+    v.setUint32(38,0,true);v.setUint32(42,c.off,true);
+    parts.push(new Uint8Array(ch),c.name);
+    cdSize+=46+c.name.length;off+=46+c.name.length;
+  });
+  const eo=new ArrayBuffer(22),ev=new DataView(eo);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);
+  ev.setUint16(8,cen.length,true);ev.setUint16(10,cen.length,true);
+  ev.setUint32(12,cdSize,true);ev.setUint32(16,cdStart,true);ev.setUint16(20,0,true);
+  parts.push(new Uint8Array(eo));
+  let total=0;parts.forEach(p=>total+=p.length);
+  const out=new Uint8Array(total);let p=0;parts.forEach(q=>{out.set(q,p);p+=q.length;});
+  return out;
+}
+function xlsxBuild(rows){
+  const enc=new TextEncoder();
+  const hdr='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+'\n';
+  const ct=hdr+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+  const rels=hdr+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const wb=hdr+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="예약명단" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const wbR=hdr+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const st=hdr+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>';
+  let body='';
+  rows.forEach((r,ri)=>{
+    body+='<row r="'+(ri+1)+'">';
+    r.forEach((v,ci)=>{
+      const ref=String.fromCharCode(65+ci)+(ri+1);
+      const txt=xlEsc(v).replace(/\n/g,'&#10;');
+      body+='<c r="'+ref+'" t="inlineStr"'+(ri===0?' s="1"':'')+'><is><t xml:space="preserve">'+txt+'</t></is></c>';
+    });
+    body+='</row>';
+  });
+  const ws=hdr+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="12" customWidth="1"/><col min="2" max="2" width="16" customWidth="1"/><col min="3" max="3" width="22" customWidth="1"/><col min="4" max="4" width="42" customWidth="1"/></cols><sheetData>'+body+'</sheetData></worksheet>';
+  return zipStore([
+    {name:'[Content_Types].xml',data:enc.encode(ct)},
+    {name:'_rels/.rels',data:enc.encode(rels)},
+    {name:'xl/workbook.xml',data:enc.encode(wb)},
+    {name:'xl/_rels/workbook.xml.rels',data:enc.encode(wbR)},
+    {name:'xl/styles.xml',data:enc.encode(st)},
+    {name:'xl/worksheets/sheet1.xml',data:enc.encode(ws)}
+  ]);
+}
+function exportExcel(){
+  if(!items.length){toast('저장할 예약이 없습니다');return;}
+  const sorted=[...items].sort((a,b)=>startOf(a).localeCompare(startOf(b)));
+  const rows=[['이름','전화번호','방문예약날짜','문의내용']];
+  sorted.forEach(it=>{
+    const ns=it.notes||{before:'',after:'',contract:''};
+    const memo=[['[방문전]',ns.before],['[방문후]',ns.after],['[계약]',ns.contract]].filter(x=>x[1]).map(x=>x[0]+' '+x[1]).join('\n');
+    rows.push([it.name||'',it.phone||'',(it.date||'')+(it.time?' '+it.time:''),memo]);
+  });
+  const u8=xlsxBuild(rows);
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([u8],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  a.download='예약명단_'+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+  toast('엑셀 파일을 저장했습니다 (총 '+(rows.length-1)+'건)');
+}
+/*XLSX_END*/
 </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>

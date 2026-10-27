@@ -1,9 +1,9 @@
 /* 예약정리 서비스워커 — 앱 파일 캐시(오프라인 실행) + CDN 라이브러리 캐시 */
-const CACHE = 'reserve-sms-v18';
+const CACHE = 'reserve-sms-v22';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
 });
 
 self.addEventListener('activate', (e) => {
@@ -12,6 +12,11 @@ self.addEventListener('activate', (e) => {
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+/* 업데이트 승인 — 사용자가 [지금 업데이트]를 누르면 즉시 적용 */
+self.addEventListener('message', (e) => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (e) => {
