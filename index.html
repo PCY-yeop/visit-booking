@@ -384,13 +384,17 @@ function parseSms(text){
   const name=val(/^이름/);
   const phoneRaw=val(/^연락처|^전화/);
   let site='';
-  const siteLine=rest.find(x=>!/^날짜|^시간|^이름|^연락처|^전화/.test(x)&&!/\d{4}/.test(x));
-  const sl=val(/^현장/);
-  site=sl||(siteLine||'').replace(/^\[|\]$/g,'');
+  const siteLine=rest.find(x=>!/^날짜|^시간|^이름|^연락처|^전화|^현장/.test(x)&&!/^[^\s:：]*명\s*[:：]/.test(x)&&!/\d{4}/.test(x));
+  const sl=val(/^현장명?\s*[:：]?/);
+  site=(sl||(siteLine||'')).replace(/^\[|\]$/g,'').trim();
   return {site,date,time,name,phone:normalizePhone(phoneRaw)};
 }
 
 /* ────────── 시트 ────────── */
+function sheetAnyOpen(){return !!document.querySelector('#sheet.on,#msheet.on,#ssheet.on');}
+function histPush(){if(!history.state||!history.state.rs){try{history.pushState({rs:1},'');}catch(_){}}}
+function histPop(){if(history.state&&history.state.rs){try{history.back();}catch(_){}}}
+addEventListener('popstate',()=>{if(sheetAnyOpen()){$('sheet').classList.remove('on');$('ssheet').classList.remove('on');$('msheet').classList.remove('on');}});
 function openSheet(){
   editingId=null;
   $('sl-title').textContent='문자 붙여넣기';
@@ -401,9 +405,9 @@ function openSheet(){
   $('frm').classList.remove('on');
   $('del-btn').style.display='none';
   ['f-site','f-date','f-time','f-name','f-phone'].forEach(i=>$(i).value='');
-  $('sheet').classList.add('on');
+  histPush();$('sheet').classList.add('on');
 }
-function closeSheet(){$('sheet').classList.remove('on');}
+function closeSheet(){$('sheet').classList.remove('on');histPop();}
 function analyze(){
   const text=$('raw').value.trim();
   if(!text)return toast('문자를 붙여넣어 주세요');
@@ -439,7 +443,7 @@ function editItem(id){
   $('p-ok').classList.remove('on');
   $('f-site').value=it.site;$('f-date').value=it.date;$('f-time').value=it.time;$('f-name').value=it.name;$('f-phone').value=it.phone;
   $('frm').classList.add('on');$('del-btn').style.display='block';
-  $('sheet').classList.add('on');
+  histPush();$('sheet').classList.add('on');
 }
 function delItem(){
   if(!editingId)return;
@@ -456,7 +460,7 @@ function openMemo(id,ev){
   memoId=id;memoTab='before';
   $('ms-sub').innerHTML=`<b>${it.name}</b> · ${fmtK(it.date)}${it.time?' '+it.time:''}`;
   switchMemoTab('before',it);
-  $('msheet').classList.add('on');
+  histPush();$('msheet').classList.add('on');
 }
 function switchMemoTab(t,keep){
   const cur=items.find(x=>x.id===memoId);
@@ -472,13 +476,13 @@ function saveMemo(){
   it.notes[memoTab]=$('m-text').value.trim();
   save();closeS();render();toast('메모를 저장했습니다');
 }
-function closeS(){$('ssheet').classList.remove('on');$('msheet').classList.remove('on');}
+function closeS(){$('ssheet').classList.remove('on');$('msheet').classList.remove('on');histPop();}
 function openStatus(id,ev){
   ev&&ev.stopPropagation();
   const it=items.find(x=>x.id===id);if(!it)return;
   statusId=id;
   $('ss-sub').innerHTML=`<b>${it.name}</b> · ${fmtK(it.date)} ${it.time||''}<br>방문예정 · 방문완료 · 계약완료 · 방문취소 중 지정하세요`;
-  $('ssheet').classList.add('on');
+  histPush();$('ssheet').classList.add('on');
 }
 function setStatus(st){
   const it=items.find(x=>x.id===statusId);if(!it)return;
@@ -571,9 +575,9 @@ function renderList(){
 function renderBoard(){
   const by=st=>[...items].filter(x=>x.status===st).sort((a2,b2)=>startOf(b2).localeCompare(startOf(a2)));
   const cx=by('canceled'),dn=by('done'),ct=by('contract');
-  $('sec-cancel').innerHTML=cx.length?cx.map(x=>card(x,'cancel')).join(''):`<div class="empty">취소한 예약이 없습니다.<br>목록의 체크 버튼에서 방문취소를 지정하면 이곳으로 옮겨집니다.</div>`;
-  $('sec-done').innerHTML=dn.length?dn.map(x=>card(x,'done')).join(''):`<div class="empty">방문 완료 기록이 없습니다.<br>목록의 체크 버튼에서 방문완료를 지정하면<br>이곳에 모이고 후기를 남길 수 있습니다.</div>`;
-  $('sec-contract').innerHTML=ct.length?ct.map(x=>card(x,'contract')).join(''):`<div class="empty">계약 완료 기록이 없습니다.<br>목록의 체크 버튼에서 계약완료를 지정하면 이곳으로 옮겨집니다.</div>`;
+  $('sec-cancel').innerHTML=cx.length?cx.map(x=>card(x,'cancel')).join(''):`<div class="empty">방문취소 기록이 없습니다.<br>목록의 체크 버튼에서 방문취소를 지정하면<br>이곳으로 옮겨집니다.</div>`;
+  $('sec-done').innerHTML=dn.length?dn.map(x=>card(x,'done')).join(''):`<div class="empty">방문완료 기록이 없습니다.<br>목록의 체크 버튼에서 방문완료를 지정하면<br>이곳으로 옮겨집니다.</div>`;
+  $('sec-contract').innerHTML=ct.length?ct.map(x=>card(x,'contract')).join(''):`<div class="empty">계약완료 기록이 없습니다.<br>목록의 체크 버튼에서 계약완료를 지정하면<br>이곳으로 옮겨집니다.</div>`;
 }
 
 /* ────────── 전체 렌더 ────────── */
