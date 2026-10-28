@@ -578,7 +578,7 @@ function renderDayPanel(){
   const evs=items.filter(x=>x.date===selDate).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
   $('daypanel').classList.add('on');
   $('daypanel').innerHTML=`<div class="dp-h">${fmtK(selDate)} 예약 ${evs.length}건</div>`+
-    (evs.length?evs.map(it=>`<div class="r-item" onclick="editItem(${it.id})"><div class="tchip num"><span class="tt">${it.status==='canceled'?'취소':it.time||'시간 미지정'}</span></div><div class="r-info"><div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}${it.status==='done'?'<span class="r-review" style="display:inline"><span class="lb">완료</span></span>':''}</div><div class="r-meta num">${it.phone||''}</div><div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div></div></div>`).join(''):'<div class="empty">이 날짜의 예약이 없습니다.</div>');
+    (evs.length?evs.map(it=>`<div class="r-item" onclick="editItem(${it.id})"><div class="tchip num"><span class="tt">${it.status==='canceled'?'취소':it.time||'시간 미지정'}</span></div><div class="r-info"><div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}${it.status==='done'?'<span class="r-review" style="display:inline"><span class="lb">완료</span></span>':''}</div><div class="r-meta num">${it.phone||''}</div><div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div></div><div class="r-acts"><button class="stbtn${hasNotes(it)?' memoed':''}" title="메모" onclick="openMemo(${it.id},event)" aria-label="메모">${MEMO_SVG}</button></div></div>`).join(''):'<div class="empty">이 날짜의 예약이 없습니다.</div>');
 }
 
 /* ────────── 방문취소 · 방문완료 · 계약 칸 ────────── */
