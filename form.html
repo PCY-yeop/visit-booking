@@ -573,9 +573,16 @@ function build(){
       var gKey=dateSt?mcPick[dateSt.idx]||'':'';
       var t=dateSt&&dateSt.el.querySelector('.chips')?dateSt.el.querySelector('.chips .on'):null;
       var nameV=document.getElementById('name').value.trim();
+      var ownerV=CFG.owner;
+      sb2.from('forms').select('user_id').eq('code',CFG.code).eq('active',true).maybeSingle()
+        .then(function(fr){ if(fr.data&&fr.data.user_id)ownerV=fr.data.user_id;
+          submitRow(sb2,ownerV);
+        },function(){ submitRow(sb2,ownerV); });
+      return;
+      function submitRow(sb2,ownerV){
       sb2.from('reservations').insert([{
         site:CFG.site,
-        owner:CFG.owner,
+        owner:ownerV,
         name:nameV,
         phone:(document.getElementById('phone')?document.getElementById('phone').value.trim():''),
         date:gKey,
@@ -591,6 +598,7 @@ function build(){
           st.style.color='var(--ok)';
         }
       });
+      }
     }catch(e){}
   }
   document.getElementById('btnSms').addEventListener('click',function(){
