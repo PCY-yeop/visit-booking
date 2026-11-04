@@ -501,13 +501,21 @@ function loadItems(){
   items.forEach(it=>{if(!it.status)it.status=it.done?'done':'pending';});
   items.forEach(it=>{if(!it.notes)it.notes={before:it.memo||'',after:it.review||'',contract:''};  /* 기존 기록 상태 자동 지정 */
     if(!it.web&&it.notes.before&&String(it.notes.before).includes('웹접수')){it.web=it.notes.before;it.notes.before=wcomp(it.notes.before);}});
+  snapItems();
 }
 function wcomp(s){
   s=String(s||'');
   if(!s.includes('웹접수'))return s;
   return s.split('|').slice(1).map(x=>x.trim()).filter(Boolean).map(x=>x.replace(/^[^:]*:\s*/,'')).join(', ');
 }
-const save=()=>{if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));cloudPush();};
+const _sigOf=it=>{const o=Object.assign({},it);delete o.updatedAt;return JSON.stringify(o);};
+function snapItems(){window.__snap=new Map(items.map(it=>[it.id,_sigOf(it)]));}
+const save=()=>{
+  const now=new Date().toISOString();
+  if(window.__snap){items.forEach(it=>{const p=window.__snap.get(it.id);if(p===undefined||p!==_sigOf(it))it.updatedAt=now;});}
+  snapItems();
+  if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));cloudPush();
+};
 let editingId=null, selDate=null, calY, calM;
 const $=id=>document.getElementById(id);
 const todayKey=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
@@ -980,7 +988,7 @@ const cRev=r=>({id:Number(r.id),site:r.site||'',name:r.name||'',phone:r.phone||'
 function cloudPush(){
   if(!sb||!cloudOn||!uid||!items.length)return;
   for(let i=0;i<items.length;i+=500){
-    sb.from('reservations').upsert(items.slice(i,i+500).map(cRow)).then(r=>{if(r.error)cloudOn=false;}).catch(()=>{cloudOn=false;});
+    sb.from('reservations').upsert(items.slice(i,i+500).map(cRow)).then(r=>{if(r.error){console.error(r.error);toast('클라우드 저장 실패: '+r.error.message);}}).catch(()=>{toast('클라우드 저장 실패 — 네트워크를 확인해 주세요');});
   }
 }
 function cloudDel(id){
@@ -1014,11 +1022,13 @@ async function cloudSync(){
     items.forEach(l=>{
       const c=map.get(l.id);
       if(!c){up.push(cRow(l));return;}
-      const lt=l.updatedAt||l.createdAt||'',ct=c.updatedAt||c.createdAt||'';
+      const tm=v=>{const n=Date.parse(v||'');return isNaN(n)?0:n;};
+      const lt=tm(l.updatedAt||l.createdAt),ct=tm(c.updatedAt||c.createdAt);
       if(lt>ct)up.push(cRow(l));else map.set(l.id,c);
     });
-    if(up.length){const r=await sb.from('reservations').upsert(up);if(r.error)return;}
+    if(up.length){const r=await sb.from('reservations').upsert(up);if(r.error){if(Date.now()-(window.__errT||0)>60000){window.__errT=Date.now();toast('클라우드 동기화 실패: '+r.error.message);}return;}}
     items=[...map.values()];
+    snapItems();
     if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));
     render();
   }catch(_){}
