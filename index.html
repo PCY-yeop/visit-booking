@@ -956,7 +956,9 @@ async function setupPush(){
     let sub=null;
     try{sub=await reg.pushManager.getSubscription();}catch(e){}
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
-    const r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:uid,sub:sub.toJSON()});
+    const gu=await sb.auth.getUser();
+    if(!gu.data||!gu.data.user)return pushMsg('푸시 등록 실패: 로그인 세션 없음 — 다시 로그인해 주세요');
+    const r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:gu.data.user.id,sub:sub.toJSON()});
     if(r.error)pushMsg('푸시 등록 실패: '+r.error.message);
     else pushMsg('알림 등록 완료 — 앱을 닫아도 알림이 옵니다');
   }catch(e){pushMsg('푸시 등록 오류: '+(e&&e.message||e));}
