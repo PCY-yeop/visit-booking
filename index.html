@@ -955,12 +955,19 @@ async function setupPush(){
     if(perm!=='granted'){pushMsg('알림 권한이 허용되지 않았습니다 — 브라우저 설정에서 이 사이트 알림을 허용해 주세요');return;}
     let sub=null;
     try{sub=await reg.pushManager.getSubscription();}catch(e){}
+    if(sub){
+      try{
+        const k=sub.options&&sub.options.applicationServerKey;
+        const cur=k?btoa(String.fromCharCode.apply(null,new Uint8Array(k))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''):'';
+        if(cur!==PUSH_PUB){await sub.unsubscribe();sub=null;}
+      }catch(e){}
+    }
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
     const gu=await sb.auth.getUser();
     if(!gu.data||!gu.data.user)return pushMsg('푸시 등록 실패: 로그인 세션 없음 — 다시 로그인해 주세요');
     const r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:gu.data.user.id,sub:sub.toJSON()});
     if(r.error)pushMsg('푸시 등록 실패: '+r.error.message);
-    else pushMsg('알림 등록 완료 — 앱을 닫아도 알림이 옵니다');
+    else{const pb=document.getElementById('pushmsg');if(pb)pb.remove();}
   }catch(e){pushMsg('푸시 등록 오류: '+(e&&e.message||e));}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&uid){setTimeout(setupPush,2000);}});
