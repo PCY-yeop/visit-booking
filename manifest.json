@@ -1,6 +1,6 @@
 {
-  "name": "예약정리",
-  "short_name": "예약정리",
+  "name": "방문예약",
+  "short_name": "방문예약",
   "description": "받은 예약 문자를 붙여넣으면 자동으로 정리하고 캘린더에 기록합니다",
   "start_url": "./",
   "display": "standalone",
