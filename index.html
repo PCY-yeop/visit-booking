@@ -658,6 +658,20 @@ function saveMemo(){
   it.notes[memoTab]=$('m-text').value.trim();
   save();closeS();render();toast('메모를 저장했습니다');
 }
+function webAlert(fresh){
+  try{navigator.vibrate&&navigator.vibrate([300,150,300]);}catch(_){}
+  try{
+    const c=new (window.AudioContext||window.webkitAudioContext)();
+    [880,1175].forEach(function(f,i){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.25,c.currentTime+i*.28);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.28+.25);o.start(c.currentTime+i*.28);o.stop(c.currentTime+i*.28+.26);});
+  }catch(_){}
+  const names=fresh.map(x=>(x.name||'손님')+(x.date?' · '+fmtK(x.date):'')).join(', ');
+  toast('🔔 새 웹 접수 '+fresh.length+'건 — '+names);
+  if(window.Notification&&Notification.permission==='granted'){
+    try{new Notification('새 웹 접수 '+fresh.length+'건',{body:names});}catch(_){}
+  }
+  render();
+}
+function askNotify(){if(window.Notification&&Notification.permission==='default')try{Notification.requestPermission();}catch(_){}}
 function closeS(){$('ssheet').classList.remove('on');$('msheet').classList.remove('on');$('wsheet').classList.remove('on');histPop();}
 function delWebAnswer(){
   if(wsId==null)return;
@@ -871,7 +885,8 @@ function paintMode(){
 }
 function showLogin(){$('view-login').classList.remove('hide');$('lg-err').textContent='';paintMode();}
   document.getElementById('frame').classList.remove('in');
-function openApp(){loadItems();cloudSync();$('view-login').classList.add('hide');$('lg-pass').value='';render();}
+setupPush();
+function openApp(){loadItems();cloudSync();askNotify();$('view-login').classList.add('hide');$('lg-pass').value='';render();clearInterval(window.__pollT);window.__pollT=setInterval(cloudSync,30000);}
   document.getElementById('frame').classList.add('in');
 async function tryLogin(){
   const id=$('lg-id').value.trim(), pw=$('lg-pass').value;
@@ -920,6 +935,19 @@ $('lg-id').addEventListener('keydown',e=>{if(e.key==='Enter')$('lg-pass').focus(
   showLogin();render();
 })();
 
+/* ── 웹 푸시 (앱 꺼진 상태 알림) ── */
+const PUSH_PUB='BIY8iXFCkUXNZJcHc2F4M3Mp4Y7FrdW37kXYckHmRt1m_nyiUSLFsJCcUyN6YjSmLyA-Ir9tDoB01B0CKo11FPU';
+async function setupPush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!sb||!uid)return;
+  try{
+    const reg=await navigator.serviceWorker.getRegistration();
+    let sub=reg?await reg.pushManager.getSubscription():null;
+    if(!sub&&reg)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
+    if(!sub)return;
+    await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:uid,sub:sub.toJSON()});
+  }catch(e){}
+}
+
 /* ────────── 클라우드 동기화 (Supabase) ────────── */
 let cloudOn=false;
 const cRow=it=>({id:it.id,site:it.site||'',name:it.name||'',phone:it.phone||'',date:it.date||'',time:it.time||'',status:it.status||'pending',notes:it.notes||{before:'',after:'',contract:''},web:it.web||'',created_at:it.createdAt||new Date().toISOString(),updated_at:it.updatedAt||it.createdAt||new Date().toISOString()});
@@ -949,6 +977,11 @@ async function cloudSync(){
       if(from>=100000)break;  /* 안전 한도 */
     }
     webItems=all.filter(r=>!r.user_id).map(cRev);
+    const _known=window.__knownWeb||(window.__knownWeb=new Set());
+    const _fresh=webItems.filter(x=>!_known.has(x.id));
+    if(_known.size||window.__webInitDone){ if(_fresh.length)webAlert(_fresh); }
+    else window.__webInitDone=true;
+    webItems.forEach(x=>_known.add(x.id));
     all=all.filter(r=>r.user_id);
     cloudOn=true;
     const map=new Map(all.map(r=>[Number(r.id),cRev(r)]));
@@ -973,6 +1006,7 @@ async function claimWeb(id){
   if(!g.data||!g.data.user)return toast('다시 로그인해 주세요');
   const r=await sb.from('reservations').update({user_id:g.data.user.id,updated_at:new Date().toISOString()}).eq('id',id);
   if(r.error)return toast('받기 실패 — 잠시 후 다시 시도해 주세요');
+  if(window.__knownWeb)window.__knownWeb.delete(id);
   webItems=webItems.filter(x=>x.id!==id);
   if(!it.createdAt)it.createdAt=new Date().toISOString();
   if(!it.updatedAt)it.updatedAt=new Date().toISOString();
@@ -983,7 +1017,8 @@ async function claimWeb(id){
 function delWeb(id){
   if(!sb)return;
   sb.from('reservations').delete().eq('id',id).then(()=>{
-    webItems=webItems.filter(x=>x.id!==id);render();toast('삭제했습니다');
+    if(window.__knownWeb)window.__knownWeb.delete(id);
+  webItems=webItems.filter(x=>x.id!==id);render();toast('삭제했습니다');
   },()=>toast('삭제 실패'));
 }
 

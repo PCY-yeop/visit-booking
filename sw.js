@@ -52,3 +52,22 @@ self.addEventListener('fetch', (e) => {
     );
   }
 });
+
+/* ── 웹 푸시 수신 ── */
+self.addEventListener('push', (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { title: '새 웹 접수', body: '' }; }
+  event.waitUntil(self.registration.showNotification(d.title || '새 웹 접수', {
+    body: d.body || '',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'web-submission'
+  }));
+});
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(clients.matchAll({ type: 'window' }).then((list) => {
+    for (const c of list) if ('focus' in c) return c.focus();
+    return clients.openWindow('./');
+  }));
+});
