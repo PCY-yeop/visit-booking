@@ -940,10 +940,14 @@ const PUSH_PUB='BIY8iXFCkUXNZJcHc2F4M3Mp4Y7FrdW37kXYckHmRt1m_nyiUSLFsJCcUyN6YjSm
 async function setupPush(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!sb||!uid)return;
   try{
-    const reg=await navigator.serviceWorker.getRegistration();
-    let sub=reg?await reg.pushManager.getSubscription():null;
-    if(!sub&&reg)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
-    if(!sub)return;
+    let reg=await navigator.serviceWorker.getRegistration();
+    if(!reg)reg=await navigator.serviceWorker.register('sw.js').then(r=>r.ready()).catch(()=>null);
+    if(!reg){await new Promise(res=>setTimeout(res,1500));reg=await navigator.serviceWorker.getRegistration();}
+    if(!reg||!reg.pushManager)return;
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted')return;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
     await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:uid,sub:sub.toJSON()});
   }catch(e){}
 }
