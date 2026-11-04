@@ -222,6 +222,39 @@ input::-webkit-input-placeholder{color:rgba(120,120,120,.55);opacity:1}
 .fe-x:active{transform:scale(.9)}
 .fe-auto{display:flex;gap:6px;align-items:center;margin-top:10px;font-weight:700;font-size:12.5px;color:var(--sub)}
 .fe-auto input{width:auto}
+/* v63 양식 편집 화면 개선 */
+.fe-head{background:var(--card);border-bottom:1px solid var(--line);padding:8px 12px 8px 6px}
+.fe-head .fe-back{height:44px;border:0;background:transparent;color:var(--deep);font:inherit;font-size:15px;font-weight:700;padding:0 10px;cursor:pointer}
+.fe-head .fe-mid{text-align:center;min-width:0}
+.fe-head .fe-mid b{display:block;font-size:15px;font-weight:800}
+.fe-head .fe-mid small{display:block;font-size:11.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.fe-head .fe-save{height:44px;padding:0 20px;border:0;border-radius:99px;background:var(--deep);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.fe-chips2{flex:none;display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}
+.fe-chips2::-webkit-scrollbar{display:none}
+.fe-pg{flex:none;height:40px;padding:0 14px;border-radius:99px;border:1.5px solid #d9d2c4;background:#fff;color:#33495b;font:inherit;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.fe-pg.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.fe-pg i{font-style:normal;font-size:11px;opacity:.8}
+.fe-hint{flex:none;margin:8px 16px 0;font-size:12px;font-weight:600;color:#7a5a10;background:#fbf3de;border-radius:10px;padding:8px 12px}
+.fe-stage{background:#fff;background-image:none;border-radius:18px;margin:10px 16px 0;padding:18px 16px 16px}
+.fe-q{font-size:19px}
+.fe-edit-txt{border-bottom:1.5px dotted #8aa0b3;border-radius:2px}
+.fe-edit-txt:focus{box-shadow:none;border-bottom-color:var(--deep);background:#f1f6fb}
+.fe-q.fe-edit-txt::after,.fe-sub.fe-edit-txt::after{content:'\270E';font-size:12px;font-weight:400;color:#6f8497;margin-left:6px}
+.fe-opt{padding:8px 4px 8px 8px;gap:8px}
+.fe-grip{flex:none;width:22px;height:44px;display:flex;align-items:center;justify-content:center;color:#8b99a5;font-weight:700;font-size:15px;letter-spacing:-2px;touch-action:none;cursor:grab;user-select:none}
+.fe-opt.drag{opacity:.55}
+.fe-x{width:44px;height:44px;border:0;border-radius:0;background:transparent;color:#a33a2c;font-size:22px;font-weight:500}
+.fe-oadd{margin-top:8px;width:100%;height:46px;border:1.5px dashed #9fb3c4;background:transparent;border-radius:12px;color:var(--deep);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.fe-auto{background:#fff;border:1.5px solid #e3ddd2;border-radius:12px;padding:0 14px;height:48px;justify-content:space-between;font-size:13.5px;font-weight:600;color:var(--ink)}
+.fe-auto input{width:22px;height:22px;accent-color:var(--deep)}
+.fe-note{margin-top:10px;font-size:12px;color:var(--sub)}
+.fe-bottom{border-top:1px solid var(--line);padding:10px 16px calc(14px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center}
+.fe-bottom button{font:inherit;font-weight:700;cursor:pointer}
+.fe-bottom .fe-nav{flex:1;height:48px;border:1.5px solid #d9d2c4;background:#fff;border-radius:12px;color:#33495b;font-size:14px}
+.fe-bottom .fe-nav:disabled{opacity:.35;cursor:default}
+.fe-bottom .fe-addp{flex:1.5;border-color:var(--deep);color:var(--deep);background:#eaf0f6}
+.fe-bottom .fe-del2{height:48px;padding:0 8px;border:0;background:transparent;color:#a33a2c;font-size:13px}
+.fe-bottom .fe-del2:disabled{opacity:.35;cursor:default}
 @media(min-width:920px){#sheet .panel{max-width:560px}}
 @keyframes up{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
 .grab{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 14px}
@@ -405,22 +438,18 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
 <div id="feditor" onclick="if(event.target===this)closeFormEditor()">
   <div class="fe-body">
     <div class="fe-head">
-      <b id="fe-title">양식 편집</b>
-      <button class="icon-btn" style="font-size:16px;font-weight:800;padding:10px 18px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--deep)" onclick="closeFormEditor()">닫기</button>
+      <button class="fe-back" onclick="closeFormEditor()" aria-label="목록으로">‹ 목록</button>
+      <div class="fe-mid"><b>양식 편집</b><small id="fe-title">새 현장</small></div>
+      <button class="fe-save" onclick="feSave()">저장</button>
     </div>
+    <div class="fe-chips2" id="fe-chips2"></div>
+    <div class="fe-hint">손님에게 보이는 화면 그대로예요. 점선 글자를 눌러 바로 고치세요.</div>
     <div class="fe-stage" id="fe-stage"></div>
     <div class="fe-bottom">
-      <div class="fe-row1">
-        <button id="fe-prev" onclick="fePrev()">‹ 이전</button>
-        <span id="fe-pos">1 / 6</span>
-        <button id="fe-next" onclick="feNext()">다음 ›</button>
-      </div>
-      <div class="fe-row2">
-        <button id="fe-add" onclick="feAdd()">＋페이지추가</button>
-        <button id="fe-del" onclick="feDel()">삭제</button>
-        <button id="fe-optadd" style="display:none" onclick="feOptAdd()">＋선택지</button>
-        <button class="fe-save" onclick="feSave()">저장</button>
-      </div>
+      <button class="fe-nav" id="fe-prev" onclick="fePrev()">‹ 이전</button>
+      <button class="fe-nav" id="fe-next" onclick="feNext()">다음 ›</button>
+      <button class="fe-nav fe-addp" onclick="feAdd()">＋ 페이지 추가</button>
+      <button class="fe-del2" id="fe-del" onclick="feDel()">페이지 삭제</button>
     </div>
   </div>
 </div>
@@ -1098,7 +1127,7 @@ function openFormEditor(code){
   feCode=code;feIdx=0;
   delete editPages[code];  /* 항상 저장된 양식에서 새 스냅샷 시작 */
   pagesOf(f);
-  $('fe-title').textContent=(f.site||'양식')+' 편집';
+  $('fe-title').textContent=(f.site||'양식')+' · '+(f.active?'사용중':'중지');
   try{history.pushState({fe:1},'');}catch(_){}
   $('feditor').classList.add('on');
   feRender();
@@ -1136,10 +1165,12 @@ function fePrev(){if(feIdx>0){feIdx--;feRender();}}
 function feNext(){if(feIdx<fePages().length-1){feIdx++;feRender();}}
 function feAdd(){
   const pgs=fePages();
-  const nxt=pgs[feIdx+1];
-  if(nxt&&nxt.type==='contact')return toast('연락처 페이지 앞에는 페이지를 추가할 수 없습니다');
+  if(pgs.length>=15)return toast('페이지는 최대 15개까지입니다');
   pgs.splice(feIdx+1,0,{id:'c'+Math.random().toString(36).slice(2,6),type:'select',q:'새 질문을 입력하세요',sub:'',opts:['선택지 1','선택지 2'],auto:true});
   feIdx++;feRender();
+  toast('새 질문 페이지를 추가했어요 — 질문과 선택지를 고쳐 주세요');
+  const q=$('fe-stage').querySelector('[data-k="q"]');
+  if(q){q.focus();const r=document.createRange();r.selectNodeContents(q);const sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}
 }
 function feDel(){
   const pgs=fePages();
@@ -1155,7 +1186,9 @@ function feRender(){
   const pgs=fePages();
   if(feIdx>=pgs.length)feIdx=pgs.length-1;
   const p=pgs[feIdx];
-  $('fe-pos').textContent=(feIdx+1)+' / '+pgs.length;
+  const NM={purpose:'목적',type:'타입',party:'인원'},NT={date:'날짜',contact:'연락처',memo:'메모'};
+  $('fe-chips2').innerHTML=pgs.map((q,i)=>'<button class="fe-pg'+(i===feIdx?' on':'')+'" onclick="feGo('+i+')"><i>'+(i+1)+'</i>'+esc3(NM[q.id]||NT[q.type]||(q.q?String(q.q).slice(0,6):'새 질문'))+'</button>').join('')+'<button class="fe-pg" onclick="feAdd()">＋ 추가</button>';
+  const onc=$('fe-chips2').querySelector('.on');if(onc&&onc.scrollIntoView)onc.scrollIntoView({inline:'center',block:'nearest'});
   /* 통합 화면: 손님이 보는 그 화면 그대로, 텍스트를 직접 클릭해 수정 */
   let pv='<div class="fe-eyebrow">'+(FE_EYEBROW[p.type]||'INFO')+'</div>'
     +'<div class="fe-q fe-edit-txt'+(p.q?'':' fe-empty')+'" contenteditable="true" data-k="q" spellcheck="false">'+esc3(p.q||'눌러서 질문 입력')+'</div>'
@@ -1164,12 +1197,12 @@ function feRender(){
     pv+='<div class="fe-opts">';
     (p.opts||[]).forEach((o,i)=>{
       const pr=String(o).split('|');
-      pv+='<div class="fe-opt"><span class="fe-mark"></span><span class="fe-t">'
+      pv+='<div class="fe-opt" data-ri="'+i+'"><span class="fe-grip" data-gi="'+i+'" title="끌어서 순서 변경">⋮⋮</span><span class="fe-mark"></span><span class="fe-t">'
         +'<b class="fe-edit-txt'+(pr[0]?'':' fe-empty')+'" contenteditable="true" data-oi="'+i+'" data-op="0" spellcheck="false">'+esc3(pr[0]||'선택지')+'</b>'
         +'<span class="fe-edit-txt'+(pr[1]?'':' fe-empty')+'" contenteditable="true" data-oi="'+i+'" data-op="1" spellcheck="false">'+esc3(pr[1]||'설명 (선택)')+'</span>'
         +'</span><button class="fe-x" onclick="feOptDelAt('+i+')" title="이 선택지 삭제">×</button></div>';
     });
-    pv+='</div>';
+    pv+='</div><button class="fe-oadd" onclick="feOptAdd()">＋ 선택지 추가</button>';
   }else if(p.type==='date'){
     const now=new Date(),y=now.getFullYear(),m=now.getMonth();
     const first=new Date(y,m,1).getDay();
@@ -1178,23 +1211,22 @@ function feRender(){
     let mon='';['일','월','화','수','목','금','토'].forEach((w,i)=>{mon+='<span class="w'+(i===0?' sun':'')+'">'+w+'</span>';});
     let cells='';for(let i=0;i<first;i++)cells+='<span class="d out">·</span>';
     for(let d=1;d<=dim;d++){const k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');cells+='<span class="d'+(k===tk?' today':'')+'">'+d+'</span>';}
-    pv+='<div class="fe-mcal"><div class="mcal-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><button type="button">‹</button><b style="font-size:12.5px">'+y+'년 '+(m+1)+'월</b><button type="button">›</button></div><div class="fe-mcal-grid">'+mon+cells+'</div></div><div class="fe-chips">';
+    pv+='<div class="fe-mcal"><div class="mcal-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><button type="button">‹</button><b style="font-size:12.5px">'+y+'년 '+(m+1)+'월</b><button type="button">›</button></div><div class="fe-mcal-grid">'+mon+cells+'</div></div><div class="fe-flabel" style="margin:12px 0 0">시간대 — 글자를 눌러 고치세요</div><div class="fe-chips" style="margin-top:8px">';
     (p.opts&&p.opts.length?p.opts:['오전','오후','저녁','시간무관']).forEach((o,i)=>{
       const pr=String(o).split('|');
       pv+='<span class="fe-chip"><span class="fe-edit-txt'+(pr[0]?'':' fe-empty')+'" contenteditable="true" data-oi="'+i+'" data-op="0" spellcheck="false">'+esc3(pr[0]||'시간대')+'</span>'
         +(pr[1]?'<small class="fe-edit-txt" contenteditable="true" data-oi="'+i+'" data-op="1" spellcheck="false">'+esc3(pr[1])+'</small>':'')
         +'</span>';
     });
-    pv+='</div>';
+    pv+='</div><div class="fe-note">날짜 페이지는 삭제할 수 없고 달력은 자동으로 만들어져요.</div>';
   }else if(p.type==='contact'){
-    pv+='<div class="fe-inputs"><span class="fe-flabel">이름</span><span class="fe-fake">홍길동</span><span class="fe-flabel">연락처</span><span class="fe-fake">010-1234-5678</span></div>';
+    pv+='<div class="fe-inputs"><span class="fe-flabel">이름</span><span class="fe-fake">홍길동</span><span class="fe-flabel">연락처</span><span class="fe-fake">010-1234-5678</span></div><div class="fe-note">이름·연락처 입력칸은 고정이에요. 위 문구만 고칠 수 있어요.</div>';
   }else if(p.type==='memo'){
     pv+='<div class="fe-fake" style="min-height:80px;text-align:left">예) 분양가 안내, 주차 대수 등</div>';
   }
   pv+='<div class="fe-autobar">'+(p.type==='select'?'<label class="fe-auto"><input type="checkbox" '+(p.auto?'checked':'')+' onchange="feSetAuto(this.checked)"> 선택하면 자동으로 다음 페이지</label>':'')+'</div>';
-  pv+='<div class="fe-btnrow"><span class="fe-backdemo">← 이전</span><span class="fe-nextdemo">'+(feIdx===pgs.length-1?'작성 완료 ✓':'다음')+'</span></div>';
   $('fe-stage').innerHTML=pv;
-  bindFeEdit();
+  bindFeEdit();bindFeDrag();
   $('fe-prev').disabled=feIdx===0;
   $('fe-next').disabled=feIdx===pgs.length-1;
   const locked=(p.type==='contact'||p.type==='date');
@@ -1220,6 +1252,37 @@ function bindFeEdit(){
     el.addEventListener('focus',()=>{if(el.classList.contains('fe-empty')){el.classList.remove('fe-empty');if(el.textContent.indexOf('눌러서')===0||el.textContent==='선택지'||el.textContent==='설명 (선택)'||el.textContent==='시간대')el.textContent='';}});
     el.addEventListener('blur',()=>{if(!el.textContent.trim()){el.classList.add('fe-empty');el.textContent=el.dataset.k==='q'?'눌러서 질문 입력':el.dataset.k==='sub'?'눌러서 안내 문구 입력':el.dataset.op==='0'?(p.type==='date'?'시간대':'선택지'):'설명 (선택)';}});
     el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}});
+  });
+}
+function feGo(i){feIdx=i;feRender();}
+/* 선택지 순서 바꾸기: ⋮⋮ 손잡이를 끌어서 놓기 (터치·마우스 모두) */
+function bindFeDrag(){
+  const p=fePages()[feIdx];
+  if(!p||p.type!=='select')return;
+  const wrap=$('fe-stage').querySelector('.fe-opts');if(!wrap)return;
+  wrap.querySelectorAll('.fe-grip').forEach(g=>{
+    g.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const from=+g.dataset.gi,rows=[...wrap.querySelectorAll('.fe-opt')];
+      rows[from].classList.add('drag');
+      let t=from;
+      try{g.setPointerCapture(e.pointerId);}catch(_){/* */}
+      const mv=ev=>{
+        t=rows.length;
+        for(let i=0;i<rows.length;i++){const r=rows[i].getBoundingClientRect();if(ev.clientY<r.top+r.height/2){t=i;break;}}
+        rows.forEach(r=>{r.style.boxShadow='';});
+        if(t!==from&&t!==from+1){
+          if(t<rows.length)rows[t].style.boxShadow='0 -3px 0 var(--deep)';
+          else rows[rows.length-1].style.boxShadow='0 3px 0 var(--deep)';
+        }
+      };
+      const up=()=>{
+        g.removeEventListener('pointermove',mv);g.removeEventListener('pointerup',up);g.removeEventListener('pointercancel',up);
+        if(t!==from&&t!==from+1){const o=p.opts.splice(from,1)[0];p.opts.splice(t>from?t-1:t,0,o);}
+        feRender();
+      };
+      g.addEventListener('pointermove',mv);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up);
+    });
   });
 }
 function feSetAuto(v){fePages()[feIdx].auto=v;}
