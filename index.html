@@ -658,11 +658,6 @@ function saveMemo(){
   it.notes[memoTab]=$('m-text').value.trim();
   save();closeS();render();toast('메모를 저장했습니다');
 }
-function pushMsg(t){
-  let b=document.getElementById('pushmsg');
-  if(!b){b=document.createElement('div');b.id='pushmsg';b.style.cssText='position:fixed;left:0;right:0;bottom:70px;margin:0 12px;background:#fff3cd;color:#6b4d00;border:1.5px solid #e6c86a;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:700;z-index:60;word-break:keep-all;box-shadow:0 4px 14px rgba(0,0,0,.15)';b.onclick=()=>b.remove();document.body.appendChild(b);}
-  b.textContent='🔔 '+t;
-}
 function webAlert(fresh){
   try{navigator.vibrate&&navigator.vibrate([300,150,300]);}catch(_){}
   try{
@@ -890,8 +885,8 @@ function paintMode(){
 }
 function showLogin(){$('view-login').classList.remove('hide');$('lg-err').textContent='';paintMode();}
   document.getElementById('frame').classList.remove('in');
-window.__pushTried=true;setupPush();
-function openApp(){loadItems();cloudSync();askNotify();$('view-login').classList.add('hide');$('lg-pass').value='';render();clearInterval(window.__pollT);window.__pollT=setInterval(cloudSync,10000);}
+setupPush();
+function openApp(){loadItems();cloudSync();askNotify();$('view-login').classList.add('hide');$('lg-pass').value='';render();clearInterval(window.__pollT);window.__pollT=setInterval(cloudSync,30000);}
   document.getElementById('frame').classList.add('in');
 async function tryLogin(){
   const id=$('lg-id').value.trim(), pw=$('lg-pass').value;
@@ -944,27 +939,18 @@ $('lg-id').addEventListener('keydown',e=>{if(e.key==='Enter')$('lg-pass').focus(
 const PUSH_PUB='BIY8iXFCkUXNZJcHc2F4M3Mp4Y7FrdW37kXYckHmRt1m_nyiUSLFsJCcUyN6YjSmLyA-Ir9tDoB01B0CKo11FPU';
 async function setupPush(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!sb||!uid)return;
-  const wait=(ms)=>new Promise(res=>setTimeout(res,ms));
   try{
-    let reg=null;
-    for(let i=0;i<10&&!reg;i++){reg=await navigator.serviceWorker.getRegistration();if(!reg)await wait(700);}
-    if(!reg){pushMsg('푸시 준비 실패: 서비스워커 미등록 — 앱 삭제 후 재설치 필요');return;}
-    if(typeof Notification==='undefined'){pushMsg('푸시 미지원 브라우저입니다 — 크롬 또는 삼성인터넷으로 열어주세요');return;}
-    let perm=Notification.permission;
-    if(perm==='default'){perm=await Notification.requestPermission();}
-    if(perm!=='granted'){pushMsg('알림 권한이 허용되지 않았습니다 — 브라우저 설정에서 이 사이트 알림을 허용해 주세요');return;}
-    let sub=null;
-    try{sub=await reg.pushManager.getSubscription();}catch(e){}
+    let reg=await navigator.serviceWorker.getRegistration();
+    if(!reg)reg=await navigator.serviceWorker.register('sw.js').then(r=>r.ready()).catch(()=>null);
+    if(!reg){await new Promise(res=>setTimeout(res,1500));reg=await navigator.serviceWorker.getRegistration();}
+    if(!reg||!reg.pushManager)return;
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted')return;
+    let sub=await reg.pushManager.getSubscription();
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
-    const gu=await sb.auth.getUser();
-    if(!gu.data||!gu.data.user)return pushMsg('푸시 등록 실패: 로그인 세션 없음 — 다시 로그인해 주세요');
-    const r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:gu.data.user.id,sub:sub.toJSON()});
-    if(r.error)pushMsg('푸시 등록 실패: '+r.error.message);
-    else pushMsg('알림 등록 완료 — 앱을 닫아도 알림이 옵니다');
-  }catch(e){pushMsg('푸시 등록 오류: '+(e&&e.message||e));}
+    await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:uid,sub:sub.toJSON()});
+  }catch(e){}
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&uid){setTimeout(setupPush,2000);}});
-addEventListener('load',()=>{if(uid)setTimeout(setupPush,2000);});
 
 /* ────────── 클라우드 동기화 (Supabase) ────────── */
 let cloudOn=false;
