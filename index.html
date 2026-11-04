@@ -1002,7 +1002,9 @@ async function setupPush(){
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
     const gu=await sb.auth.getUser();
     if(!gu.data||!gu.data.user)return pushMsg('푸시 등록 실패: 로그인 세션 없음 — 다시 로그인해 주세요');
-    const r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:gu.data.user.id,sub:sub.toJSON()});
+    /* 같은 폰에서 다른 계정으로 로그인해도 등록되도록 서버 함수로 소유자를 넘겨받음 (함수가 없으면 예전 방식 사용) */
+    let r=await sb.rpc('claim_push_sub',{p_endpoint:sub.endpoint,p_sub:sub.toJSON()});
+    if(r.error&&/claim_push_sub|schema cache/i.test(r.error.message||''))r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:gu.data.user.id,sub:sub.toJSON()});
     if(r.error)pushMsg('푸시 등록 실패: '+r.error.message);
     else{const pb=document.getElementById('pushmsg');if(pb)pb.remove();}
   }catch(e){pushMsg('푸시 등록 오류: '+(e&&e.message||e));}
