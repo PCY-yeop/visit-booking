@@ -885,8 +885,8 @@ function paintMode(){
 }
 function showLogin(){$('view-login').classList.remove('hide');$('lg-err').textContent='';paintMode();}
   document.getElementById('frame').classList.remove('in');
-setupPush();
-function openApp(){loadItems();cloudSync();askNotify();$('view-login').classList.add('hide');$('lg-pass').value='';render();clearInterval(window.__pollT);window.__pollT=setInterval(cloudSync,30000);}
+window.__pushTried=true;setupPush();
+function openApp(){loadItems();cloudSync();askNotify();$('view-login').classList.add('hide');$('lg-pass').value='';render();clearInterval(window.__pollT);window.__pollT=setInterval(cloudSync,10000);}
   document.getElementById('frame').classList.add('in');
 async function tryLogin(){
   const id=$('lg-id').value.trim(), pw=$('lg-pass').value;
@@ -956,6 +956,7 @@ async function setupPush(){
     else await toast('알림 등록 완료');
   }catch(e){await toast('푸시 등록 오류: '+(e&&e.message||e));}
 }
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&uid&&!window.__pushTried){window.__pushTried=true;setupPush();}});
 
 /* ────────── 클라우드 동기화 (Supabase) ────────── */
 let cloudOn=false;
