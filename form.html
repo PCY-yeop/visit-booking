@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>방문예약 신청</title>
+<meta property="og:title" content="방문예약 신청">
+<meta property="og:description" content="클릭해서 방문 예약을 신청해 주세요">
+<meta property="og:type" content="website">
+<meta name="description" content="방문 예약 신청 폼">
+<style>
+  :root{
+    --ink:#152736;
+    --ink-soft:#4a6072;
+    --paper:#f7f5f0;
+    --card:#ffffff;
+    --navy:#123a5c;
+    --navy-deep:#0c2b46;
+    --brass:#b98a2f;
+    --brass-soft:#f3e7cd;
+    --line:#e3ddd2;
+    --ok:#1e6e4e;
+    --err:#b03a2e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;-webkit-text-size-adjust:100%;}
+  body{
+    font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    overflow:hidden;
+    background-image:
+      linear-gradient(rgba(18,58,92,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(18,58,92,.045) 1px, transparent 1px);
+    background-size:28px 28px;
+  }
+  #app{
+    max-width:480px;height:100dvh;
+    margin:0 auto;
+    display:flex;flex-direction:column;
+    position:relative;
+    background:var(--paper);
+    box-shadow:0 0 40px rgba(21,39,54,.12);
+  }
+  @media (max-width:480px){ #app{box-shadow:none;} }
+
+  #topbar{
+    padding:14px 20px 0;
+    background:var(--paper);
+    z-index:5;
+  }
+  .topline{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .brand{font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--navy);}
+  .stepnum{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .stepnum b{color:var(--ink);font-size:14px;}
+  .bar{height:4px;background:#e5e0d5;border-radius:2px;overflow:hidden;}
+  .bar span{
+    display:block;height:100%;width:0;
+    background:linear-gradient(90deg,var(--navy),var(--brass));
+    border-radius:2px;
+    transition:width .35s cubic-bezier(.4,0,.2,1);
+  }
+  #loadmsg{
+    text-align:center;padding:40px 24px;
+    font-size:14px;color:var(--ink-soft);
+  }
+  #loadmsg b{display:block;font-size:18px;color:var(--ink);margin-bottom:6px;}
+  .spin{
+    width:26px;height:26px;margin:0 auto 14px;
+    border:3px solid var(--line);border-top-color:var(--brass);
+    border-radius:50%;animation:sp 1s linear infinite;
+  }
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  #stage{flex:1;position:relative;overflow:hidden;}
+  .step{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    padding:26px 24px 20px;
+    visibility:hidden;
+    transform:translateX(40px);opacity:0;
+    transition:transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
+    overflow-y:auto;
+  }
+  .step.active{visibility:visible;transform:none;opacity:1;}
+  .step.leaving{visibility:visible;transform:translateX(-40px);opacity:0;}
+
+  .eyebrow{
+    font-size:12px;font-weight:700;letter-spacing:.14em;
+    color:var(--brass);margin-bottom:8px;
+  }
+  .q{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.35;margin-bottom:6px;white-space:pre-wrap;}
+  .q-sub{font-size:13.5px;color:var(--ink-soft);margin-bottom:22px;}
+  .spacer{flex:1;}
+
+  .opts{display:flex;flex-direction:column;gap:10px;}
+  .opt{
+    display:flex;align-items:center;gap:12px;
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    padding:17px 18px;
+    cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+    transition:border-color .12s, background .12s, transform .08s;
+  }
+  .opt:active{transform:scale(.98);}
+  .opt .mark{
+    width:22px;height:22px;flex:none;
+    border:2px solid #cfc7b8;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:transparent;transition:all .12s;
+  }
+  .opt .t{flex:1;min-width:0;}
+  .opt .t b{display:block;font-size:16.5px;font-weight:700;word-break:keep-all;}
+  .opt .t span{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px;word-break:keep-all;}
+  .opt.on{
+    border-color:var(--navy);background:#eef3f8;
+  }
+  .opt.on .mark{
+    background:var(--navy);border-color:var(--navy);color:#fff;
+  }
+  .opt.on .mark::before{content:"✓";font-weight:800;}
+
+  .dategrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .dchip{
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:11px 4px;
+    text-align:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+    transition:all .12s;
+  }
+  .dchip:active{transform:scale(.96);}
+  .dchip .d1{font-size:15px;font-weight:800;}
+  .dchip .d2{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .dchip.on{background:var(--navy);border-color:var(--navy);}
+  .dchip.on .d1,.dchip.on .d2{color:#fff;}
+  .dchip.on .d2{opacity:.8;}
+
+  .mcal{
+    background:var(--card);border:1.5px solid var(--line);border-radius:12px;
+    padding:10px;margin-bottom:14px;
+  }
+  .mcal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .mcal-head b{font-size:14px;}
+  .mcal-head button{
+    font:inherit;font-size:14px;font-weight:800;width:30px;height:30px;
+    border-radius:8px;border:1px solid var(--line);background:var(--paper);
+    color:var(--ink-soft);cursor:pointer;
+  }
+  .mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;}
+  .mcal-grid .w{font-size:10.5px;font-weight:800;color:var(--ink-soft);}
+  .mcal-grid .w.sun{color:#c0392b;}
+  .mcal-grid .d{
+    font-size:13px;font-weight:700;padding:9px 0;border-radius:8px;cursor:pointer;
+    color:var(--ink);background:#f6f4ef;-webkit-tap-highlight-color:transparent;
+    user-select:none;transition:all .12s;
+  }
+  .mcal-grid .d:active{transform:scale(.93);}
+  .mcal-grid .d.sel{background:var(--navy);color:#fff;}
+  .mcal-grid .d.today{box-shadow:inset 0 0 0 1.5px var(--navy);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chips .chip{flex:1 1 17%;min-width:52px;max-width:78px;text-align:center;box-sizing:border-box;white-space:nowrap;padding:9px 0;font-size:13.5px;}
+  .chip{
+    border:1.5px solid var(--line);background:var(--card);
+    border-radius:999px;padding:10px 15px;
+    font-size:14px;font-weight:600;color:var(--ink-soft);
+    cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+    transition:all .12s;
+  }
+  .chip:active{transform:scale(.96);}
+  .chip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .chip .d{display:block;font-size:11px;font-weight:500;opacity:.75;}
+
+  .inputs{display:flex;flex-direction:column;gap:14px;}
+  input[type=text],input[type=tel],textarea{
+    width:100%;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:15px 16px;
+    font-size:17px;
+    font-family:inherit;background:var(--card);
+    color:var(--ink);transition:border-color .15s;
+  }
+  input:focus,textarea:focus{outline:none;border-color:var(--navy);}
+  textarea{resize:none;min-height:120px;}
+  .invalid{border-color:var(--err)!important;background:#fdf3f2;}
+  .flabel{font-size:13px;font-weight:700;color:var(--ink-soft);}
+
+  #footer{
+    padding:12px 20px calc(16px + env(safe-area-inset-bottom));
+    background:var(--paper);
+    border-top:1px solid var(--line);
+    display:flex;gap:10px;z-index:5;
+  }
+  .btn{
+    border:none;border-radius:12px;
+    padding:16px 20px;
+    font-size:16px;font-weight:800;font-family:inherit;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:transform .08s, opacity .2s;
+  }
+  .btn:active{transform:scale(.97);}
+  .back{
+    background:none;color:var(--ink-soft);
+    border:1.5px solid var(--line);flex:none;padding:16px 22px;
+    visibility:hidden;
+  }
+  .back.show{visibility:visible;}
+  .next{
+    flex:1;background:var(--brass);color:#fff;
+    box-shadow:0 3px 0 #8f681f;
+  }
+  .next:active{transform:translateY(2px);box-shadow:0 1px 0 #8f681f;}
+  .next.dim{opacity:.45;}
+
+  #done{
+    position:absolute;inset:0;z-index:10;
+    display:none;flex-direction:column;
+    padding:26px 24px calc(16px + env(safe-area-inset-bottom));
+    background:var(--paper);
+    overflow-y:auto;
+  }
+  #done.show{display:flex;}
+  .done-ic{
+    width:64px;height:64px;border-radius:50%;
+    background:var(--ok);color:#fff;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;margin:8px 0 16px;
+  }
+  .done h2{font-size:24px;font-weight:800;letter-spacing:-.02em;}
+  .done .sub{font-size:14px;color:var(--ink-soft);margin:6px 0 18px;}
+  .preview{
+    background:#f2f6f9;border:1px solid #d7e2ea;border-radius:12px;
+    padding:16px;font-size:14px;white-space:pre-wrap;word-break:keep-all;
+    margin-bottom:16px;
+  }
+  .sendrow{display:flex;flex-direction:column;gap:10px;}
+  .send{
+    width:100%;border:none;border-radius:12px;padding:17px;
+    font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;
+  }
+  .send-sms{background:var(--navy);color:#fff;}
+  .send-copy{background:var(--card);color:var(--ink);border:1.5px solid var(--line);}
+  .copied{background:var(--ok)!important;color:#fff!important;}
+  .again{
+    display:block;margin:16px auto 0;background:none;border:none;
+    color:var(--ink-soft);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;
+  }
+  #banner{
+    display:none;margin:0 20px;padding:8px 12px;margin-top:10px;
+    background:#fdf3f2;border:1px solid #ecc9c5;border-radius:8px;
+    font-size:12.5px;color:var(--err);
+  }
+  #banner.show{display:block;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important;animation:none!important;}
+  }
+</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<div id="app">
+
+  <div id="topbar" style="display:none;">
+    <div class="topline">
+      <span class="brand" id="brand">◆ 분양 상담 문의</span>
+      <span class="stepnum"><b id="cur">1</b> / <span id="total">6</span></span>
+    </div>
+    <div class="bar"><span id="bar"></span></div>
+  </div>
+  <div id="banner"></div>
+  <div id="closed" style="display:none;position:fixed;inset:0;z-index:50;background:#f2f4f7;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px">
+    <div style="font-size:46px;line-height:1">🔒</div>
+    <div style="font-size:18px;font-weight:800;color:#1f2937;margin:16px 0 8px">접수가 종료된 링크입니다</div>
+    <div style="font-size:14px;color:#6b7280;line-height:1.6;word-break:keep-all">이 방문예약 접수는 마감되었거나 종료되었습니다.<br>방문 예약은 담당자에게 직접 연락해 주세요.</div>
+  </div>
+
+  <div id="loadmsg">
+    <div class="spin"></div>
+    <b>문의 양식을 불러오는 중…</b>
+    잠시만 기다려 주세요.
+  </div>
+
+  <div id="stage" style="display:none;"></div>
+
+  <div id="footer" style="display:none;">
+    <button class="btn back" id="btnBack">← 이전</button>
+    <button class="btn next" id="btnNext">다음</button>
+  </div>
+
+  <div id="done">
+    <div class="done-ic">✓</div>
+    <h2>작성 완료!</h2>
+    <div class="sub">내용을 확인하시고 담당자에게 보내 주세요.</div>
+    <div class="preview" id="preview"></div>
+    <div id="cloudStatus" style="font-size:13.5px;font-weight:700;margin:-6px 0 10px;"></div>
+    <div class="sendrow">
+      <button class="send send-sms" id="btnSms">📱 문자로 담당자에게 보내기</button>
+      <button class="send send-copy" id="btnCopy">📋 내용 복사하기</button>
+    </div>
+    <button class="again" id="btnAgain">처음부터 다시 작성하기</button>
+  </div>
+
+</div>
+
+<script>
+/* ── 예약장부(관리 홈페이지)와 연결된 설정: 관리 탭의 수정이 자동 반영됩니다 ── */
+var SB_URL='https://lmkpwupeinkqbfmhqcrc.supabase.co';
+var SB_KEY='sb_publishable_BrgcLKyjLU7et47zEocZdQ_mNvmFNbo';
+var DEF={
+  site:"○○○ 아파트",
+  agent_phone:"010-0000-0000",
+  days:7,
+  pages:[
+    {id:'purpose',type:'select',q:'어떤 목적으로\n문의하셨나요?',sub:'하나만 선택해 주세요.',opts:['실거주|직접 입주 목적','투자|수익 · 자산 목적'],auto:true},
+    {id:'type',type:'select',q:'희망하시는\n타입을 알려주세요',sub:'모델하우스에서 보실 평형이에요.',opts:['59㎡(A)','59㎡(B)','84㎡(A)','84㎡(B)','상관없음'],auto:true},
+    {id:'date',type:'date',q:'언제 방문하실 예정인가요?',sub:'날짜를 선택하고 시간대를 골라 주세요.',opts:['10시','11시','12시','13시','14시','15시','16시','17시','18시','미정|시간은 나중에 확정']},
+    {id:'party',type:'select',q:'몇 분이서\n방문하시나요?',sub:'정확히 몇 명인지 몰라도 괜찮아요.',opts:['1명|혼자 방문','2명|커플 · 부부 · 지인과','3명 이상|가족 · 단체'],auto:true},
+    {id:'contact',type:'contact',q:'이름을\n알려주세요',sub:'선택하신 일시로 담당자가 다시 연락드릴게요.'},
+    {id:'memo',type:'memo',q:'궁금하신 점이 있나요?',sub:'없으면 그냥 넘어가도 돼요. (선택)'}
+  ]
+};
+var CFG={code:new URLSearchParams(location.search).get('s')||'',owner:null};
+for(var k in DEF)CFG[k]=DEF[k];
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+(function(){
+  var fin=false;
+  function start(){ if(fin)return; fin=true;
+    document.getElementById('loadmsg').style.display='none';
+    ['topbar','stage','footer'].forEach(function(i){document.getElementById(i).style.display='';});
+    build();
+  }
+  if(CFG.code && typeof supabase!=='undefined'){
+    supabase.createClient(SB_URL,SB_KEY)
+      .from('forms').select('*').eq('code',CFG.code).eq('active',true).maybeSingle()
+      .then(function(r){
+        if(r.data){
+          CFG.owner=r.data.user_id||null;
+          CFG.site=r.data.site||DEF.site;
+          CFG.agent_phone=r.data.agent_phone||DEF.agent_phone;
+          CFG.days=r.data.days||DEF.days;
+          if(r.data.pages&&Array.isArray(r.data.pages)&&r.data.pages.length)CFG.pages=r.data.pages;
+        }else if(!r.error&&!r.data){
+          document.getElementById('loadmsg').style.display='none';
+          document.getElementById('closed').style.display='flex';
+          return;
+        }
+        start();
+      });
+    setTimeout(start,4000);
+  }else{
+    start();
+  }
+})();
+
+function build(){
+  document.getElementById('brand').textContent='◆ '+CFG.site;
+  document.title=CFG.site+' 상담 문의';
+  var stage=document.getElementById('stage');
+  stage.innerHTML='';
+  var steps=[];
+
+  CFG.pages.forEach(function(p,idx){
+    var s=document.createElement('section');
+    s.className='step';
+    var eyebrow={select:'SELECT',date:'VISIT DATE',contact:'CONTACT',memo:'MEMO'}[p.type]||'INFO';
+    var h='<div class="eyebrow">'+eyebrow+'</div>';
+    h+='<div class="q">'+esc(p.q||'')+'</div>';
+    h+='<div class="q-sub">'+esc(p.sub||'')+'</div>';
+    if(p.type==='select'){
+      h+='<div class="opts" id="box'+idx+'">';
+      (p.opts||[]).forEach(function(o){
+        var parts=String(o).split('|');
+        h+='<div class="opt" data-v="'+esc(parts[0])+'"><span class="mark"></span><span class="t"><b>'+esc(parts[0])+'</b>'
+          +(parts[1]?'<span>'+esc(parts[1])+'</span>':'')+'</span></div>';
+      });
+      h+='</div>';
+    }else if(p.type==='date'){
+      h+='<div class="mcal" id="mcal'+idx+'"></div>';
+      h+='<div class="q-sub" style="margin-top:18px;margin-bottom:10px;">시간대도 골라 주세요.</div>';
+      h+='<div class="chips" id="timebox'+idx+'">';
+      (p.opts&&p.opts.length?p.opts:['10시','11시','12시','13시','14시','15시','16시','17시','18시','미정']).forEach(function(o){
+        var parts=String(o).split('|');
+        h+='<div class="chip" data-v="'+esc(parts[0])+'">'+esc(parts[0])+'</div>';
+      });
+      h+='</div>';
+    }else if(p.type==='contact'){
+      h+='<div class="inputs">'
+        +'<div><span class="flabel">이름</span><input type="text" id="name" placeholder="홍길동" autocomplete="name" style="margin-top:6px;"></div>'
+        +'<div><span class="flabel">연락처</span><input type="tel" id="phone" placeholder="010-1234-5678" inputmode="numeric" autocomplete="tel" style="margin-top:6px;"></div>'
+        +'</div>';
+    }else if(p.type==='memo'){
+      h+='<textarea id="memo" placeholder="예) 분양가 안내, 주차 대수, 잔금 일정 등"></textarea>';
+    }
+    h+='<div class="spacer"></div>';
+    s.innerHTML=h;
+    stage.appendChild(s);
+    steps.push({el:s,p:p,idx:idx});
+  });
+
+  var cur=0, summary='', leavingTimer=null;
+  var curEl=document.getElementById('cur'), totalEl=document.getElementById('total'),
+      barEl=document.getElementById('bar'),
+      btnBack=document.getElementById('btnBack'), btnNext=document.getElementById('btnNext'),
+      done=document.getElementById('done');
+  totalEl.textContent=steps.length;
+
+  /* 백키: 스텝 안에서는 이전 페이지로, 첫 페이지에서는 페이지를 나감 */
+  try{history.pushState({st:0},'');}catch(e){}
+  window.addEventListener('popstate',function(e){
+    if(done.classList.contains('show')){done.classList.remove('show');return;}
+    if(cur>0){go(cur-1);try{history.pushState({st:cur},'');}catch(_){}}
+  });
+
+  function pick(id){var c=document.querySelector('#'+id+' .on');return c?(c.dataset.v||''):'';}
+  function validate(i){
+    var st=steps[i];
+    if(st.p.type==='select'){
+      var b=st.el.querySelector('.opts');
+      if(!b.querySelector('.on'))return false;
+    }
+    if(st.p.type==='date'){
+      if(!mcPick[st.idx])return false;
+    }
+    if(st.p.type==='contact'){
+      var n=document.getElementById('name');
+      var p=document.getElementById('phone');
+      var nv=n.value.trim(), pv=p?p.value.trim():'';
+      n.classList.toggle('invalid',!nv);
+      if(p)p.classList.toggle('invalid',!pv);
+      if(!nv||!pv)return false;
+    }
+    return true;
+  }
+  function render(){
+    curEl.textContent=cur+1;
+    barEl.style.width=(cur/(steps.length-1))*100+'%';
+    btnBack.classList.toggle('show',cur>0);
+    var last=cur===steps.length-1;
+    btnNext.textContent=last?'작성 완료 ✓':'다음';
+    var st=steps[cur];
+    var needsPick=st.p.type==='select'||st.p.type==='date';
+    var ok=validate(cur);
+    btnNext.classList.toggle('dim',needsPick&&!ok);
+  }
+  function go(i){
+    if(leavingTimer){clearTimeout(leavingTimer);leavingTimer=null;}
+    var old=steps[cur].el;
+    old.classList.remove('active');old.classList.add('leaving');
+    cur=i;
+    var nw=steps[cur].el;
+    nw.classList.remove('leaving');
+    void nw.offsetWidth;
+    nw.classList.add('active');
+    leavingTimer=setTimeout(function(){steps.forEach(function(s){s.el.classList.remove('leaving');});leavingTimer=null;},320);
+    nw.scrollTop=0;
+    render();
+  }
+
+  steps.forEach(function(st,i){
+    var b=st.el.querySelector('.opts,.chips');
+    if(b)b.addEventListener('click',function(e){
+      var o=e.target.closest('.opt,.chip,.dchip');if(!o)return;
+      if(o.classList.contains('chip')){
+        b.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on');});
+      }else{
+        b.querySelectorAll('.opt').forEach(function(x){x.classList.remove('on');});
+      }
+      o.classList.add('on');render();
+      if(st.p.type==='select'&&st.p.auto){
+        if(!leavingTimer)setTimeout(function(){if(cur===i&&validate(i))go(i+1);},380);
+      }
+    });
+  });
+
+  /* 미니 달력 */
+  var mcY=new Date().getFullYear(),mcM=new Date().getMonth();
+  var mcPick={};
+  function mcKey(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+  function mcRender(idx){
+    var first=new Date(mcY,mcM,1).getDay();
+    var dim=new Date(mcY,mcM+1,0).getDate();
+    var tk=new Date();
+    var tkKey=mcKey(tk.getFullYear(),tk.getMonth(),tk.getDate());
+    var mon='';
+    ['일','월','화','수','목','금','토'].forEach(function(w,i){mon+='<span class="w'+(i===0?' sun':'')+'">'+w+'</span>';});
+    var cells='';
+    for(var i=0;i<first;i++)cells+='<span class="d out">·</span>';
+    for(var d=1;d<=dim;d++){
+      var key=mcKey(mcY,mcM,d);
+      var cls=(mcPick[idx]===key?' sel':'')+(key===tkKey?' today':'');
+      cells+='<span class="d'+cls+'" data-key="'+key+'">'+d+'</span>';
+    }
+    var box=document.getElementById('mcal'+idx);
+    if(!box)return;
+    box.innerHTML='<div class="mcal-head"><button type="button" data-mv="-1">‹</button><b>'+mcY+'년 '+(mcM+1)+'월</b><button type="button" data-mv="1">›</button></div><div class="mcal-grid">'+mon+cells+'</div>';
+    box.querySelectorAll('[data-mv]').forEach(function(b){
+      b.addEventListener('click',function(e){e.stopPropagation();mcM+=+b.dataset.mv;if(mcM<0){mcM=11;mcY--;}if(mcM>11){mcM=0;mcY++;}mcRender(idx);});
+    });
+    box.querySelectorAll('.d[data-key]').forEach(function(dd){
+      dd.addEventListener('click',function(){mcPick[idx]=dd.dataset.key;mcRender(idx);updateNext();});
+    });
+  }
+  steps.forEach(function(st,i){ if(st.p.type==='date')mcRender(i); });
+
+  btnNext.addEventListener('click',function(){
+    if(!validate(cur)){
+      var st=steps[cur];
+      if(st.p.type==='date'){
+        var mg=st.el.querySelector('.mcal');
+        mg.style.transition='none';mg.style.borderColor='var(--err)';
+        setTimeout(function(){mg.style.transition='';mg.style.borderColor='';},700);
+      }
+      return;
+    }
+    if(cur===steps.length-1){
+      var L=['현장: '+CFG.site];
+      var info=['웹접수'];
+      L.push('이름: '+(document.getElementById('name').value.trim()));
+      L.push('연락처: '+(document.getElementById('phone')?document.getElementById('phone').value.trim():''));
+      var dateSt=steps.filter(function(s){return s.p.type==='date';})[0];
+      L.push('날짜: '+(mcPick[dateSt.idx]||''));
+      var timeBox=dateSt.el.querySelector('.chips');
+      var tc=timeBox?timeBox.querySelector('.on'):null;
+      if(tc)L.push('시간: '+(tc.dataset.v||''));
+      steps.forEach(function(st){
+        var p=st.p;
+        if(p.type==='contact'||p.type==='date')return;
+        if(p.type==='select'){
+          var b=st.el.querySelector('.opts');
+          var c=b.querySelector('.on');
+          if(c){L.push(String(p.q||'').split('\n')[0].replace(/\?/g,'')+': '+(c.dataset.v||''));info.push(String(p.q||'').split('\n')[0].replace(/\?/g,'')+': '+(c.dataset.v||''));}
+        }
+        if(p.type==='memo'){
+          var m=document.getElementById('memo').value.trim();
+          if(m){L.push('문의사항: '+m);info.push('문의: '+m);}
+        }
+      });
+      summary=L.join('\n');
+      document.getElementById('preview').textContent=summary;
+      window.__info=info.join(' | ');
+      done.classList.add('show');
+      autoSubmit();
+      return;
+    }
+    go(cur+1);
+  });
+  btnBack.addEventListener('click',function(){if(cur>0)go(cur-1);});
+
+  /* 연락처 하이픈 자동 완성 */
+  var phEl=document.getElementById('phone');
+  if(phEl)phEl.addEventListener('input',function(){
+    var v=phEl.value.replace(/\D/g,'');
+    if(v.length<4)phEl.value=v;
+    else if(v.length<8)phEl.value=v.slice(0,3)+'-'+v.slice(3);
+    else phEl.value=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
+  });
+
+  function autoSubmit(){
+    var st=document.getElementById('cloudStatus');
+    if(typeof supabase==='undefined')return;
+    try{
+      var sb2=supabase.createClient(SB_URL,SB_KEY);
+      var dateSt=steps.filter(function(s){return s.p.type==='date';})[0];
+      var gKey=dateSt?mcPick[dateSt.idx]||'':'';
+      var t=dateSt&&dateSt.el.querySelector('.chips')?dateSt.el.querySelector('.chips .on'):null;
+      var nameV=document.getElementById('name').value.trim();
+      sb2.from('reservations').insert([{
+        site:CFG.site,
+        owner:CFG.owner,
+        name:nameV,
+        phone:(document.getElementById('phone')?document.getElementById('phone').value.trim():''),
+        date:gKey,
+        time:t?(t.dataset.v||''):'',
+        status:'pending',
+        notes:{before:window.__info||'웹접수',after:'',contract:''}
+      }]).then(function(r){
+        if(r.error){
+          st.textContent='⚠ 자동 접수 실패 — 아래 문자 전송을 이용해 주세요';
+          st.style.color='var(--err)';
+        }else{
+          st.textContent='✓ 방문예약이 완료되었습니다. 담당자가 곧 연락드리겠습니다.';
+          st.style.color='var(--ok)';
+        }
+      });
+    }catch(e){}
+  }
+  document.getElementById('btnSms').addEventListener('click',function(){
+    location.href='sms:'+CFG.agent_phone+'?body='+encodeURIComponent(summary);
+  });
+  document.getElementById('btnCopy').addEventListener('click',function(){
+    var btn=this;
+    function ok(){
+      btn.textContent='✓ 복사됨 — 카카오톡에 붙여넣어 주세요';
+      btn.classList.add('copied');
+      setTimeout(function(){btn.textContent='📋 내용 복사하기';btn.classList.remove('copied');},2600);
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(summary).then(ok);
+    else{var t=document.createElement('textarea');t.value=summary;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();ok();}
+  });
+  document.getElementById('btnAgain').addEventListener('click',function(){
+    done.classList.remove('show');
+    go(0);
+  });
+  steps[0].el.classList.add('active');
+  render();
+}
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>예약정리 — 문자 붙여넣기 예약 장부</title>
+<title>방문예약 - 정리노트</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0E6B4F">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -84,6 +84,12 @@ h2.sec .cnt{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:11
 .stbtn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--green);background:var(--card);color:var(--green);cursor:pointer;display:grid;place-items:center}
 .stbtn:active{background:var(--green-soft)}
 .stbtn.memoed{background:var(--green);color:#fff}
+.stbtn.fweb{background:var(--deep);border-color:var(--deep);color:#fff}
+#wsheet{position:fixed;inset:0;z-index:44;display:none}
+#wsheet.on{display:block}
+#wsheet .dim{position:absolute;inset:0;background:rgba(15,23,32,.45)}
+#wsheet .panel{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-radius:22px 22px 0 0;padding:18px 20px 30px;animation:up .25s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto;z-index:2}
+@media(min-width:520px){#wsheet .panel{border-radius:22px;bottom:50%;transform:translate(-50%,50%)}}
 .badge-cx{font-size:10px;font-weight:800;color:var(--red);background:var(--red-soft);border-radius:6px;padding:2px 6px}
 .r-review{font-size:12px;color:var(--deep);margin-top:3px;line-height:1.5}
 .r-review .lb{font-weight:800;color:var(--green)}
@@ -91,7 +97,7 @@ h2.sec .cnt{font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:11
 .memo-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
 .memo-tabs button{font:inherit;font-size:12.5px;font-weight:800;padding:9px 0;border-radius:9px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer}
 .memo-tabs button.on{background:var(--deep);border-color:var(--deep);color:#fff}
-#msheet textarea{width:100%;font:inherit;font-size:13.5px;line-height:1.6;padding:12px 14px;border:1.5px dashed #C9C5B8;border-radius:12px;height:110px;min-height:110px;max-height:110px;resize:none;background:var(--card);outline:none;font-family:inherit}
+#msheet textarea{width:100%;font:inherit;font-size:13.5px;line-height:1.6;padding:12px 14px;border:1.5px dashed #C9C5B8;border-radius:12px;height:130px;min-height:130px;max-height:40vh;resize:vertical;background:var(--card);outline:none;font-family:inherit}
 #msheet textarea:focus{border-color:var(--green);border-style:solid}
 .past{filter:grayscale(.4)}
 
@@ -122,18 +128,100 @@ input::-webkit-input-placeholder{color:rgba(120,120,120,.55);opacity:1}
 .empty b{color:var(--green)}
 
 /* FAB */
-.fab{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:15;background:var(--deep);color:#fff;border:none;border-radius:99px;padding:15px 26px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(11,74,55,.35);display:flex;align-items:center;gap:8px}
-@media(min-width:920px){.fab{left:auto;right:34px;transform:none}}
-.fab:active{transform:translateX(-50%) scale(.97)}
-#frame:not(.in) .fab{display:none}
-@media(min-width:920px){.fab:active{transform:scale(.97)}}
+.fab-wrap{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:15;display:flex;gap:8px;align-items:center;max-width:calc(100vw - 24px)}
+@media(min-width:920px){.fab-wrap{left:auto;right:34px;transform:none}}
+.fab{background:var(--deep);color:#fff;border:none;border-radius:99px;padding:13px 20px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(11,74,55,.35);display:flex;align-items:center;gap:6px;white-space:nowrap;flex:none}
+.fab:active{transform:scale(.97)}
+.fab-icon{background:var(--card);color:var(--ink);border:1.5px solid var(--line);padding:14px;box-shadow:0 10px 24px rgba(30,40,30,.15)}
+#frame:not(.in) .fab-wrap{display:none}
 
 /* 시트 */
 #sheet,#ssheet,#msheet{position:fixed;inset:0;z-index:30;display:none}
 #sheet.on,#ssheet.on,.on,#msheet.on{display:block}
 #sheet .dim,#ssheet .dim, .dim,#msheet .dim{position:absolute;inset:0;background:rgba(30,40,30,.45)}
-#sheet .panel,#ssheet .panel, .panel,#msheet .panel{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-radius:22px 22px 0 0;padding:18px 20px 30px;animation:up .25s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto}
-@media(min-width:520px){#sheet .panel,#ssheet .panel, .panel,#msheet .panel{border-radius:22px;bottom:50%;transform:translate(-50%,50%)}}
+#sheet .panel,#ssheet .panel, .panel,#msheet .panel,#wsheet .panel{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-radius:22px 22px 0 0;padding:18px 20px 30px;animation:up .25s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto}
+@media(min-width:520px){#sheet .panel,#ssheet .panel, .panel,#msheet .panel,#wsheet .panel{border-radius:22px;bottom:50%;transform:translate(-50%,50%)}}
+#fsheet{position:fixed;inset:0;z-index:30;display:none}
+#fsheet.on{display:block}
+#fsheet .dim{position:absolute;inset:0;background:rgba(30,40,30,.45)}
+#fsheet .panel{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-radius:22px 22px 0 0;padding:18px 20px 30px;animation:up .25s cubic-bezier(.2,.8,.3,1);max-height:92dvh;overflow-y:auto}
+@media(min-width:520px){#fsheet .panel{border-radius:22px;bottom:50%;transform:translate(-50%,50%)}}
+.pg{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);margin-top:8px}
+.pg-head{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--sub);margin-bottom:6px}
+.pg-head .pg-t{flex:1;min-width:0}
+.icon-btn{font:inherit;font-size:11px;font-weight:800;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer;flex:none}
+.wcard{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:8px;font-size:13px}
+
+/* ── 양식 편집 팝업 (손님 화면 미리보기) ── */
+#feditor{position:fixed;inset:0;z-index:45;display:none;background:var(--bg)}
+#feditor.on{display:flex;flex-direction:column}
+.fe-body{max-width:520px;width:100%;margin:0 auto;height:100dvh;display:flex;flex-direction:column}
+.fe-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;flex:none}
+.fe-head b{font-size:15px}
+.fe-stage{flex:1;min-height:0;background:#f7f5f0;border:1.5px solid var(--line);border-radius:14px;margin:0 18px;padding:22px 20px 18px;
+  background-image:linear-gradient(rgba(18,58,92,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(18,58,92,.045) 1px,transparent 1px);
+  background-size:24px 24px;overflow-y:auto}
+.fe-eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;color:#b98a2f;margin-bottom:6px}
+.fe-q{font-size:20px;font-weight:800;color:#123a5c;line-height:1.35;white-space:pre-wrap}
+.fe-sub{font-size:12.5px;color:#4a6072;margin:4px 0 14px}
+.fe-opts{display:flex;flex-direction:column;gap:8px}
+.fe-opt{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #e3ddd2;border-radius:12px;padding:12px 14px}
+.fe-mark{width:18px;height:18px;flex:none;border:2px solid #cfc7b8;border-radius:50%}
+.fe-t{flex:1;min-width:0}.fe-t b{display:block;font-size:14.5px;color:#152736}
+.fe-t span{display:block;font-size:11.5px;color:#4a6072;margin-top:1px}
+.fe-mcal{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:9px;margin-bottom:10px}
+.fe-mcal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.fe-mcal-head b{font-size:12.5px}
+.fe-mcal-head button{font:inherit;font-size:13px;font-weight:800;width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--sub);cursor:pointer;pointer-events:none}
+.fe-mcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.fe-mcal-grid .w{font-size:9.5px;font-weight:800;color:var(--sub)}
+.fe-mcal-grid .w.sun{color:#c0392b}
+.fe-mcal-grid .d{font-size:11.5px;font-weight:700;padding:6px 0;border-radius:7px;color:var(--ink);background:var(--bg);pointer-events:none}
+.fe-mcal-grid .d.sel{background:var(--deep);color:#fff}
+.fe-mcal-grid .d.today{box-shadow:inset 0 0 0 1.5px var(--deep)}
+.fe-dchip{background:#fff;border:1.5px solid #e3ddd2;border-radius:10px;padding:9px 4px;text-align:center}
+.fe-dchip .d1{font-size:13px;font-weight:800;color:#152736}.fe-dchip .d2{font-size:10.5px;color:#4a6072}
+.fe-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fe-chip{border:1.5px solid #e3ddd2;background:#fff;border-radius:99px;padding:7px 12px;font-size:12px;font-weight:600;color:#4a6072}
+.fe-chip small{opacity:.7;font-size:10px}
+.fe-inputs{display:flex;flex-direction:column;gap:8px}
+.fe-flabel{font-size:12px;font-weight:700;color:#4a6072}
+.fe-fake{display:block;background:#fff;border:1.5px solid #e3ddd2;border-radius:10px;padding:11px 12px;font-size:14px;color:#6b7a86}
+.fe-btnrow{display:flex;gap:8px;margin-top:16px}
+.fe-backdemo{flex:none;padding:12px 18px;border:1.5px solid #e3ddd2;border-radius:10px;font-size:13.5px;font-weight:800;color:#4a6072;background:#f7f5f0}
+.fe-nextdemo{flex:1;text-align:center;padding:12px;background:#b98a2f;color:#fff;border-radius:10px;font-size:14px;font-weight:800}
+.fe-edit{flex:1;overflow-y:auto;padding:12px 18px}
+.fe-editbox{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px}
+.fe-editbox label{display:block;font-size:12px;font-weight:800;color:var(--sub);margin-bottom:4px}
+.fe-editbox textarea,.fe-editbox input[type=text]{width:100%;box-sizing:border-box;min-width:0;font:inherit;font-size:14px;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+.fe-editbox textarea{resize:vertical;min-height:48px}
+.fe-orow{display:flex;gap:6px;margin-top:6px;align-items:center}
+.fe-orow input{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:13.5px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.fe-onum{flex:none;width:20px;text-align:center;font-size:11.5px;font-weight:800;color:var(--sub)}
+.fe-ocount{display:flex;gap:8px;align-items:center;margin-top:8px}
+.fe-ocount span{font-size:12.5px;font-weight:800;color:var(--sub);flex:1}
+.fe-ocount button{font:inherit;font-size:14px;font-weight:800;width:34px;height:30px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.fe-ocount button:active{transform:scale(.94)}
+.fe-bottom{flex:none;border-top:2px solid var(--line);background:var(--card);padding:8px 14px calc(10px + env(safe-area-inset-bottom))}
+.fe-row1{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.fe-row1 button{flex:1;font:inherit;font-size:14px;font-weight:800;padding:11px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.fe-row1 button:disabled{opacity:.35;cursor:default}
+.fe-row1 span{font-size:12.5px;font-weight:800;color:var(--sub);flex:none;min-width:48px;text-align:center}
+.fe-row2{display:flex;gap:6px}
+.fe-row2 button{flex:1;font:inherit;font-size:13px;font-weight:800;padding:11px 0;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--sub);cursor:pointer}
+.fe-row2 .fe-save{background:var(--deep);border-color:var(--deep);color:#fff}
+.fe-row2 button:disabled{opacity:.35;cursor:default}
+
+.fe-edit-txt{outline:none;border-radius:6px;transition:box-shadow .12s;cursor:text;min-width:24px;display:inline-block}
+.fe-edit-txt:focus{box-shadow:0 0 0 2px rgba(185,138,47,.45);background:#fff}
+.fe-q.fe-edit-txt{display:block}
+.fe-sub.fe-edit-txt{display:block}
+.fe-t .fe-edit-txt{display:block}
+.fe-edit-txt.fe-empty{opacity:.45}
+.fe-x{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--sub);font-size:14px;font-weight:800;cursor:pointer;line-height:1}
+.fe-x:active{transform:scale(.9)}
+.fe-auto{display:flex;gap:6px;align-items:center;margin-top:10px;font-weight:700;font-size:12.5px;color:var(--sub)}
+.fe-auto input{width:auto}
 @media(min-width:920px){#sheet .panel{max-width:560px}}
 @keyframes up{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
 .grab{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 14px}
@@ -151,6 +239,7 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
 .btn-ghost{background:var(--card);border:1.5px solid var(--line);color:var(--sub)}
 .frm{display:none;flex-direction:column;gap:10px;margin-top:12px}
 .frm.on{display:flex}
+
 .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .f{display:flex;flex-direction:column;gap:4px;min-width:0}
 .f input{width:100%}
@@ -245,10 +334,15 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
   </div>
 </main>
 
-  <button class="fab" onclick="openSheet()">
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    문자 붙여넣기
-  </button>
+  <div class="fab-wrap">
+    <button class="fab" onclick="openSheet()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      문자 붙여넣기
+    </button>
+    <button class="fab fab-icon" onclick="openForms()" aria-label="폼 관리" title="폼 관리">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- 시트 -->
@@ -293,6 +387,43 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
   </div>
 </div>
 
+<!-- 폼 관리 시트 -->
+<div id="fsheet" onclick="if(event.target===this)closeForms()">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div class="sl-head">
+      <h3>폼 관리</h3>
+      <button onclick="closeForms()">닫기</button>
+    </div>
+    <div id="forms-list"></div>
+  </div>
+</div>
+
+<!-- 양식 편집 팝업 (손님 화면 미리보기) -->
+<div id="feditor" onclick="if(event.target===this)closeFormEditor()">
+  <div class="fe-body">
+    <div class="fe-head">
+      <b id="fe-title">양식 편집</b>
+      <button class="icon-btn" style="font-size:16px;font-weight:800;padding:10px 18px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--deep)" onclick="closeFormEditor()">닫기</button>
+    </div>
+    <div class="fe-stage" id="fe-stage"></div>
+    <div class="fe-bottom">
+      <div class="fe-row1">
+        <button id="fe-prev" onclick="fePrev()">‹ 이전</button>
+        <span id="fe-pos">1 / 6</span>
+        <button id="fe-next" onclick="feNext()">다음 ›</button>
+      </div>
+      <div class="fe-row2">
+        <button id="fe-add" onclick="feAdd()">＋페이지추가</button>
+        <button id="fe-del" onclick="feDel()">삭제</button>
+        <button id="fe-optadd" style="display:none" onclick="feOptAdd()">＋선택지</button>
+        <button class="fe-save" onclick="feSave()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 백업은 로그인 도입 시 다시 제공 예정 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
@@ -312,6 +443,18 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
   </div>
 </div>
 
+<!-- 양식 답변 상세 시트 -->
+<div id="wsheet" onclick="if(event.target===this)closeS()">
+  <div class="dim"></div>
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <div class="sl-head"><h3>양식 답변 상세</h3><button onclick="closeS()">닫기</button></div>
+    <p class="sl-note" id="ws-sub"></p>
+    <div id="ws-body" style="font-size:13.5px;line-height:1.7;word-break:keep-all"></div>
+    <div class="sl-actions"><button class="btn btn-danger" style="flex:1" id="ws-del" onclick="delWebAnswer()">양식 답변 삭제</button></div>
+  </div>
+</div>
+
 <!-- 메모 시트 -->
 <div id="msheet" onclick="if(event.target===this)closeS()">
   <div class="dim"></div>
@@ -319,6 +462,7 @@ textarea#raw:focus{border-color:var(--green);border-style:solid}
     <div class="grab"></div>
     <div class="sl-head"><h3>메모</h3><button onclick="closeS()">닫기</button></div>
     <p class="sl-note" id="ms-sub"></p>
+    <div id="ms-web" style="display:none;color:#7a5b16;background:#f6efdd;border-radius:8px;padding:6px 10px;margin:-2px 0 10px;font-size:12.5px;word-break:keep-all"></div>
     <div class="memo-tabs" id="memo-tabs">
       <button class="on" data-t="before" onclick="switchMemoTab('before')">방문전</button>
       <button data-t="after" onclick="switchMemoTab('after')">방문후</button>
@@ -354,7 +498,13 @@ function loadItems(){
   }
   items=JSON.parse(localStorage.getItem(itemsKey())||'[]');
   items.forEach(it=>{if(!it.status)it.status=it.done?'done':'pending';});
-  items.forEach(it=>{if(!it.notes)it.notes={before:it.memo||'',after:it.review||'',contract:''};});  /* 기존 기록 상태 자동 지정 */
+  items.forEach(it=>{if(!it.notes)it.notes={before:it.memo||'',after:it.review||'',contract:''};  /* 기존 기록 상태 자동 지정 */
+    if(!it.web&&it.notes.before&&String(it.notes.before).includes('웹접수')){it.web=it.notes.before;it.notes.before=wcomp(it.notes.before);}});
+}
+function wcomp(s){
+  s=String(s||'');
+  if(!s.includes('웹접수'))return s;
+  return s.split('|').slice(1).map(x=>x.trim()).filter(Boolean).map(x=>x.replace(/^[^:]*:\s*/,'')).join(', ');
 }
 const save=()=>{if(uid)localStorage.setItem(itemsKey(),JSON.stringify(items));cloudPush();};
 let editingId=null, selDate=null, calY, calM;
@@ -412,10 +562,11 @@ function parseSms(text){
 }
 
 /* ────────── 시트 ────────── */
-function sheetAnyOpen(){return !!document.querySelector('#sheet.on,#msheet.on,#ssheet.on');}
+function sheetAnyOpen(){return $('sheet').classList.contains('on')||$('ssheet').classList.contains('on')||$('msheet').classList.contains('on')||$('fsheet').classList.contains('on')||$('wsheet').classList.contains('on');}
+function _oldSheetAnyOpen(){return !!document.querySelector('#sheet.on,#msheet.on,#ssheet.on,#fsheet.on');}
 function histPush(){if(!history.state||!history.state.rs){try{history.pushState({rs:1},'');}catch(_){}}}
 function histPop(){if(history.state&&history.state.rs){try{history.back();}catch(_){}}}
-addEventListener('popstate',()=>{if(sheetAnyOpen()){$('sheet').classList.remove('on');$('ssheet').classList.remove('on');$('msheet').classList.remove('on');}});
+addEventListener('popstate',()=>{if($('feditor').classList.contains('on')){$('feditor').classList.remove('on');delete editPages[feCode];feCode=null;renderForms();return;}if(sheetAnyOpen()){$('sheet').classList.remove('on');$('ssheet').classList.remove('on');$('msheet').classList.remove('on');$('fsheet').classList.remove('on');$('wsheet').classList.remove('on');}});
 function openSheet(){
   editingId=null;
   $('sl-title').textContent='문자 붙여넣기';
@@ -446,10 +597,14 @@ function openDirect(){
 }
 function saveItem(){
   const rec={site:$('f-site').value.trim(),date:$('f-date').value,time:$('f-time').value.trim(),name:$('f-name').value.trim(),phone:$('f-phone').value.trim(),memo:''};
-  if(!(rec.date&&rec.name))return toast('날짜와 이름은 필수입니다');
+  if(!rec.phone)return toast('연락처는 필수입니다');
+  if(rec.date&&!/\d{4}-\d{2}-\d{2}/.test(rec.date))rec.date='';
   if(editingId){
     const it=items.find(x=>x.id===editingId);
-    Object.assign(it,rec);toast('수정했습니다');
+    if(!it.web&&it.notes&&it.notes.before&&String(it.notes.before).includes('웹접수'))it.web=it.notes.before;
+    const keep={notes:it.notes,web:it.web};
+    Object.assign(it,rec,keep);  /* 이름·연락처·일정만 수정 — 웹접수·메모는 그대로 */
+    toast('수정했습니다');
   }else{
     items.push({id:Date.now(),...rec,status:'pending',notes:{before:'',after:'',contract:''},createdAt:new Date().toISOString()});
     toast('예약이 기록되었습니다');
@@ -482,6 +637,9 @@ function openMemo(id,ev){
   const it=items.find(x=>x.id===id);if(!it)return;
   memoId=id;memoTab='before';
   $('ms-sub').innerHTML=`<b>${it.name}</b> · ${fmtK(it.date)}${it.time?' '+it.time:''}`;
+  const _ws=it.web||(it.notes&&it.notes.before&&String(it.notes.before).includes('웹접수')?it.notes.before:'');
+  const mw=$('ms-web');
+  if(_ws){mw.style.display='';mw.textContent='양식답변 · '+wcomp(_ws);}else mw.style.display='none';
   switchMemoTab('before',it);
   histPush();$('msheet').classList.add('on');
 }
@@ -499,7 +657,29 @@ function saveMemo(){
   it.notes[memoTab]=$('m-text').value.trim();
   save();closeS();render();toast('메모를 저장했습니다');
 }
-function closeS(){$('ssheet').classList.remove('on');$('msheet').classList.remove('on');histPop();}
+function closeS(){$('ssheet').classList.remove('on');$('msheet').classList.remove('on');$('wsheet').classList.remove('on');histPop();}
+function delWebAnswer(){
+  if(wsId==null)return;
+  if(!confirm('이 예약에 저장된 양식 답변을 삭제할까요?\n예약 자체는 유지됩니다.'))return;
+  const it=items.find(x=>x.id===wsId);
+  if(!it)return closeS();
+  delete it.web;
+  if(it.notes&&it.notes.before&&String(it.notes.before).includes('웹접수'))it.notes.before='';
+  save();render();closeS();toast('양식 답변을 삭제했습니다');
+}
+let wsId=null,wsClaimed=false;
+function viewWeb(id,claimed){
+  let it=webItems.find(x=>x.id===id);
+  if(!it&&claimed)it=items.find(x=>x.id===id);
+  if(!it)return;
+  wsId=id;wsClaimed=!!claimed;
+  $('ws-del').style.display=wsClaimed?'':'none';
+  const raw=it.web||(it.notes&&it.notes.before)||'';
+  $('ws-sub').innerHTML=`<b>${esc2(it.name||'')}</b> · ${esc2(it.phone||'')} · ${it.date?fmtK(it.date):'날짜 미정'}${it.time?' '+esc2(it.time):''}`;
+  const lines=String(raw||'').split('|').map(s=>s.trim()).filter(Boolean);
+  $('ws-body').innerHTML=lines.map((s,i)=>`<div style="${i===0?'font-weight:800;color:var(--deep);margin-bottom:6px;':'padding:7px 0;border-bottom:1px solid #eee;'}">${esc3(s)}</div>`).join('');
+  histPush();$('wsheet').classList.add('on');
+}
 function openStatus(id,ev){
   ev&&ev.stopPropagation();
   const it=items.find(x=>x.id===id);if(!it)return;
@@ -521,16 +701,20 @@ const startOf=r=>(r.date||'')+'T'+((r.time||'00:00').match(/\d{1,2}:\d{2}/)||['0
 const CHK_SVG='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
 const MEMO_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 function cardInfo(it){
+  const _wsrc=it.web||(it.notes&&it.notes.before&&String(it.notes.before).includes('웹접수')?it.notes.before:'');
+  const winfo='';  /* 양식 답변은 📄 버튼으로 확인 — 카드에는 표시하지 않음 */
   return `<div class="r-info">
     <div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}</div>
     <div class="r-meta num">${it.phone||'연락처 없음'}</div>
-    <div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div>
+    <div class="r-meta num">${it.date?fmtK(it.date):'날짜 미정'}${it.date&&it.time?' · '+it.time:''}</div>${winfo}
   </div>`;
 }
 function actBtns(it,kind){
   const chk=`<button class="stbtn" title="상태 지정" onclick="openStatus(${it.id},event)" aria-label="상태 지정">${CHK_SVG}</button>`;
+  const wview=it.web||((it.notes&&it.notes.before&&String(it.notes.before).includes('웹접수'))?it.notes.before:'');
+  const detail=`<button class="stbtn fweb" title="양식 답변 보기" onclick="event.stopPropagation();viewWeb(${it.id},1)" aria-label="양식 답변 보기"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2a1 1 0 0 1 1-1Zm0 2H6v16h12V5h-3v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4Zm1 7h6v1.6h-6V11Zm0 3.2h6v1.6h-6v-1.6Zm0-6.4h4v1.6h-4V7.8Z"/></svg></button>`;
   const memo=`<button class="stbtn${hasNotes(it)?' memoed':''}" title="메모" onclick="openMemo(${it.id},event)" aria-label="메모">${MEMO_SVG}</button>`;
-  return `<div class="r-acts">${memo}${chk}</div>`;
+  return `<div class="r-acts">${wview?detail:''}${memo}${chk}</div>`;
 }
 function card(it,kind){return `<div class="r-item" onclick="editItem(${it.id})">${cardInfo(it)}${actBtns(it,kind)}</div>`;}
 let curSec='list';
@@ -579,20 +763,26 @@ function renderDayPanel(){
   const evs=items.filter(x=>x.date===selDate).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
   $('daypanel').classList.add('on');
   $('daypanel').innerHTML=`<div class="dp-h">${fmtK(selDate)} 예약 ${evs.length}건</div>`+
-    (evs.length?evs.map(it=>`<div class="r-item" onclick="editItem(${it.id})"><div class="tchip num"><span class="tt">${it.status==='canceled'?'취소':it.time||'시간 미지정'}</span></div><div class="r-info"><div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}${it.status==='done'?'<span class="r-review" style="display:inline"><span class="lb">완료</span></span>':''}</div><div class="r-meta num">${it.phone||''}</div><div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div></div><div class="r-acts"><button class="stbtn${hasNotes(it)?' memoed':''}" title="메모" onclick="openMemo(${it.id},event)" aria-label="메모">${MEMO_SVG}</button></div></div>`).join(''):'<div class="empty">이 날짜의 예약이 없습니다.</div>');
+    (evs.length?evs.map(it=>`<div class="r-item" onclick="editItem(${it.id})"><div class="tchip num"><span class="tt">${it.status==='canceled'?'취소':it.time||'시간 미지정'}</span></div><div class="r-info"><div class="r-name">${it.name}${it.site?`<span class="site">${it.site}</span>`:''}${it.status==='canceled'?'<span class="badge-cx">취소</span>':''}${it.status==='done'?'<span class="r-review" style="display:inline"><span class="lb">완료</span></span>':''}</div><div class="r-meta num">${it.phone||''}</div><div class="r-meta num">${fmtK(it.date)}${it.time?' · '+it.time:''}</div></div><div class="r-acts">${it.web||(it.notes&&it.notes.before&&String(it.notes.before).includes('웹접수'))?`<button class="stbtn fweb" title="양식 답변 보기" onclick="event.stopPropagation();viewWeb(${it.id},1)" aria-label="양식 답변 보기"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2a1 1 0 0 1 1-1Zm0 2H6v16h12V5h-3v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4Zm1 7h6v1.6h-6V11Zm0 3.2h6v1.6h-6v-1.6Zm0-6.4h4v1.6h-4V7.8Z"/></svg></button>`:''}<button class="stbtn${hasNotes(it)?' memoed':''}" title="메모" onclick="openMemo(${it.id},event)" aria-label="메모">${MEMO_SVG}</button></div></div>`).join(''):'<div class="empty">이 날짜의 예약이 없습니다.</div>');
 }
 
 /* ────────── 방문취소 · 방문완료 · 계약 칸 ────────── */
 function renderList(){
   const tk=todayKey();
   const pend=items.filter(x=>x.status==='pending');
-  const up=pend.filter(x=>x.date>=tk).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
-  const past=pend.filter(x=>x.date<tk).sort((a,b)=>startOf(b).localeCompare(startOf(a)));
+  const nodate=pend.filter(x=>!x.date);
+  const up=pend.filter(x=>x.date&&x.date>=tk).sort((a,b)=>startOf(a).localeCompare(startOf(b)));
+  const past=pend.filter(x=>x.date&&x.date<tk).sort((a,b)=>startOf(b).localeCompare(startOf(a)));
   let html='';
   if(!items.length)html=`<div class="empty">아직 기록이 없습니다.<br>받은 예약 문자를 <b>문자 붙여넣기</b> 버튼에 그대로 복사해 넣으면<br>현장·날짜·시간·이름·연락처가 자동으로 정리됩니다.</div>`;
-  else if(!up.length&&!past.length)html=`<div class="empty">예정된 예약이 없습니다.</div>`;
+  else if(!up.length&&!past.length&&!nodate.length)html=`<div class="empty">예정된 예약이 없습니다.</div>`;
+  if(nodate.length)html+=`<div class="sec-line">날짜 미정 ${nodate.length}건</div>`+nodate.map(x=>card(x,'list')).join('');
   if(up.length)html+=`<div class="sec-line">예정된 예약 ${up.length}건</div>`+up.map(x=>card(x,'list')).join('');
   if(past.length)html+=`<div class="sec-line">지나간 예약 ${past.length}건</div>`+past.map(x=>card(x,'list')).join('');
+  if(webItems.length)html=
+    `<div class="sec-line">웹 접수 문의 ${webItems.length}건</div>`+
+    webItems.map(x=>`<div class="wcard"><div style="flex:1;min-width:0"><div class="r-name">${esc2(x.name)}</div><div class="r-meta num">${esc2(x.phone||'')}</div><div class="r-meta num">${x.date?fmtK(x.date):'날짜 미정'}${x.time?' · '+esc2(x.time):''}</div><div style="color:#6b7a86;margin:4px 0 0;word-break:keep-all">${esc2((x.web||(x.notes&&x.notes.before||''))?wcomp(x.web||(x.notes&&x.notes.before||'')):'')}</div></div><div style="display:flex;flex-direction:column;gap:6px;flex:none"><button class="btn btn-primary" style="padding:8px 12px;font-size:13px" onclick="claimWeb(${x.id})">예약으로 받기</button><button class="btn" style="padding:8px 12px;font-size:13px" onclick="delWeb(${x.id})">삭제</button></div></div>`).join('')+
+    html;
   $('sec-list').innerHTML=html;
 }
 function renderBoard(){
@@ -729,8 +919,8 @@ $('lg-id').addEventListener('keydown',e=>{if(e.key==='Enter')$('lg-pass').focus(
 
 /* ────────── 클라우드 동기화 (Supabase) ────────── */
 let cloudOn=false;
-const cRow=it=>({id:it.id,site:it.site||'',name:it.name||'',phone:it.phone||'',date:it.date||'',time:it.time||'',status:it.status||'pending',notes:it.notes||{before:'',after:'',contract:''},created_at:it.createdAt||new Date().toISOString(),updated_at:it.updatedAt||it.createdAt||new Date().toISOString()});
-const cRev=r=>({id:Number(r.id),site:r.site||'',name:r.name||'',phone:r.phone||'',date:r.date||'',time:r.time||'',status:r.status||'pending',notes:r.notes||{before:'',after:'',contract:''},createdAt:r.created_at,updatedAt:r.updated_at});
+const cRow=it=>({id:it.id,site:it.site||'',name:it.name||'',phone:it.phone||'',date:it.date||'',time:it.time||'',status:it.status||'pending',notes:it.notes||{before:'',after:'',contract:''},web:it.web||'',created_at:it.createdAt||new Date().toISOString(),updated_at:it.updatedAt||it.createdAt||new Date().toISOString()});
+const cRev=r=>({id:Number(r.id),site:r.site||'',name:r.name||'',phone:r.phone||'',date:r.date||'',time:r.time||'',status:r.status||'pending',notes:r.notes||{before:'',after:'',contract:''},web:r.notes&&r.notes.before&&String(r.notes.before).includes('웹접수')?'':(r.web||''),createdAt:r.created_at,updatedAt:r.updated_at});
 function cloudPush(){
   if(!sb||!cloudOn||!uid||!items.length)return;
   for(let i=0;i<items.length;i+=500){
@@ -741,6 +931,8 @@ function cloudDel(id){
   if(!sb||!cloudOn)return;
   sb.from('reservations').delete().eq('id',id).then(()=>{},()=>{});
 }
+let webItems=[];
+const esc2=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function cloudSync(){
   if(!sb||!uid)return;
   try{
@@ -753,6 +945,8 @@ async function cloudSync(){
       from+=1000;
       if(from>=100000)break;  /* 안전 한도 */
     }
+    webItems=all.filter(r=>!r.user_id).map(cRev);
+    all=all.filter(r=>r.user_id);
     cloudOn=true;
     const map=new Map(all.map(r=>[Number(r.id),cRev(r)]));
     const up=[];
@@ -768,6 +962,299 @@ async function cloudSync(){
     render();
   }catch(_){}
 }
+/* ────────── 웹 접수 문의 수령 ────────── */
+async function claimWeb(id){
+  if(!sb)return toast('클라우드에 연결되지 않았습니다');
+  const it=webItems.find(x=>x.id===id);if(!it)return;
+  const g=await sb.auth.getUser();
+  if(!g.data||!g.data.user)return toast('다시 로그인해 주세요');
+  const r=await sb.from('reservations').update({user_id:g.data.user.id,updated_at:new Date().toISOString()}).eq('id',id);
+  if(r.error)return toast('받기 실패 — 잠시 후 다시 시도해 주세요');
+  webItems=webItems.filter(x=>x.id!==id);
+  if(!it.createdAt)it.createdAt=new Date().toISOString();
+  if(!it.updatedAt)it.updatedAt=new Date().toISOString();
+  if(!it.web)it.web=(it.notes&&it.notes.before)||'';  /* 양식 답변은 web에 별도 보관 — 메모와 분리 */
+  it.notes={before:'',after:'',contract:''};  /* 메모는 비워둠 — 자유롭게 추가 작성 */
+  items.push(it);save();render();toast('예약으로 받았습니다');
+}
+function delWeb(id){
+  if(!sb)return;
+  sb.from('reservations').delete().eq('id',id).then(()=>{
+    webItems=webItems.filter(x=>x.id!==id);render();toast('삭제했습니다');
+  },()=>toast('삭제 실패'));
+}
+
+/* ────────── 폼 관리 (현장별 고객 문의 양식) ────────── */
+let forms=[];
+const esc3=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const formCode=()=>Math.random().toString(36).slice(2,8);
+function formLink(c){return location.origin+location.pathname.replace(/[^/]*$/,'')+'form.html?s='+c;}
+async function loadForms(){
+  if(!sb||!uid){$('forms-list').innerHTML='<div class="empty">로그인이 필요합니다.</div>';return;}
+  try{
+    const{data,error}=await sb.from('forms').select('*').order('created_at',{ascending:true});
+    forms=error?[]:(data||[]);
+  }catch(_){forms=[];}
+  renderForms();
+}
+const IS='font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);box-sizing:border-box;width:100%;min-width:0';
+const PG_TYPE={select:'선택지 페이지',date:'방문일 페이지',contact:'연락처 페이지',memo:'메모 페이지'};
+const DEF_PAGES=f=>[
+  {id:'purpose',type:'select',q:'어떤 목적으로 문의하셨나요?',sub:'하나만 선택해 주세요.',opts:['실거주|직접 입주 목적','투자|수익 · 자산 목적'],auto:true},
+  {id:'type',type:'select',q:'희망하시는 타입을 알려주세요',sub:(f&&f.intro)||'모델하우스에서 보실 평형이에요.',opts:(f&&f.types&&f.types.length)?f.types.slice():['59㎡(A)','59㎡(B)','84㎡(A)','84㎡(B)','상관없음'],auto:true},
+  {id:'date',type:'date',q:'언제 방문하실 예정인가요?',sub:'날짜를 선택하고 시간대를 골라 주세요.',opts:['10시','11시','12시','13시','14시','15시','16시','17시','18시','미정|시간은 나중에 확정']},
+  {id:'party',type:'select',q:'몇 분이서 방문하시나요?',sub:'정확히 몇 명인지 몰라도 괜찮아요.',opts:['1명|혼자 방문','2명|커플 · 부부 · 지인과','3명 이상|가족 · 단체'],auto:true},
+  {id:'contact',type:'contact',q:'이름을 알려주세요',sub:'선택하신 일시로 담당자가 다시 연락드릴게요.'},
+  {id:'memo',type:'memo',q:'궁금하신 점이 있나요?',sub:'없으면 그냥 넘어가도 돼요. (선택)'}
+];
+let editPages={};
+function pagesOf(f){
+  if(!editPages[f.code])editPages[f.code]=(f.pages&&f.pages.length)?JSON.parse(JSON.stringify(f.pages)):DEF_PAGES(f);
+  return editPages[f.code];
+}
+function pgUp(c,i){const a=editPages[c];if(i<=0)return;[a[i-1],a[i]]=[a[i],a[i-1]];renderForms();}
+function pgDown(c,i){const a=editPages[c];if(i>=a.length-1)return;[a[i+1],a[i]]=[a[i],a[i+1]];renderForms();}
+function pgDel(c,i){const a=editPages[c];const p=a[i];if(p.type==='contact')return toast('연락처 페이지는 삭제할 수 없습니다');if(p.type==='date')return toast('방문일 페이지는 삭제할 수 없습니다');a.splice(i,1);renderForms();}
+function pgAdd(c){editPages[c].push({id:'c'+Math.random().toString(36).slice(2,6),type:'select',q:'',sub:'',opts:[],auto:true});renderForms();}
+
+/* ────────── 양식 편집 팝업 (손님 화면과 동일한 미리보기) ────────── */
+let feCode=null, feIdx=0;
+const FE_EYEBROW={select:'SELECT',date:'VISIT DATE',contact:'CONTACT',memo:'MEMO'};
+function openFormEditor(code){
+  const f=forms.find(x=>x.code===code);if(!f)return;
+  feCode=code;feIdx=0;
+  delete editPages[code];  /* 항상 저장된 양식에서 새 스냅샷 시작 */
+  pagesOf(f);
+  $('fe-title').textContent=(f.site||'양식')+' 편집';
+  try{history.pushState({fe:1},'');}catch(_){}
+  $('feditor').classList.add('on');
+  feRender();
+}
+function closeFormEditor(){
+  if($('feditor').classList.contains('on')){
+    $('feditor').classList.remove('on');
+    delete editPages[feCode];  /* 저장 안 했으면 편집 내용 버림 — 저장된 양식 유지 */
+    feCode=null;
+    try{if(history.state&&history.state.fe)history.back();}catch(_){/* */}
+    renderForms();
+  }
+}
+function fePages(){return editPages[feCode]||[];}
+function feSave(){
+  const f=forms.find(x=>x.code===feCode);if(!f)return;
+  const pgs=fePages();
+  if(!pgs.some(p=>p.type==='contact'))return toast('연락처 페이지는 필수입니다');
+  if(!pgs.some(p=>p.type==='date'))return toast('방문일 페이지는 필수입니다');
+  const tpg=pgs.find(p=>p.id==='type');
+  const patch={
+    pages:pgs,
+    types:tpg?tpg.opts.map(o=>String(o).split('|')[0]):(f.types||[]),
+    intro:tpg?tpg.sub:'',
+    updated_at:new Date().toISOString()
+  };
+  sb.from('forms').update(patch).eq('code',feCode).then(r=>{
+    if(r.error)return toast('저장 실패 — SQL의 pages 컬럼 실행 여부를 확인해 주세요');
+    Object.assign(f,patch);
+    toast('저장했습니다 — 링크에 즉시 반영됩니다');
+    closeFormEditor();
+  });
+}
+function fePrev(){if(feIdx>0){feIdx--;feRender();}}
+function feNext(){if(feIdx<fePages().length-1){feIdx++;feRender();}}
+function feAdd(){
+  const pgs=fePages();
+  const nxt=pgs[feIdx+1];
+  if(nxt&&nxt.type==='contact')return toast('연락처 페이지 앞에는 페이지를 추가할 수 없습니다');
+  pgs.splice(feIdx+1,0,{id:'c'+Math.random().toString(36).slice(2,6),type:'select',q:'새 질문을 입력하세요',sub:'',opts:['선택지 1','선택지 2'],auto:true});
+  feIdx++;feRender();
+}
+function feDel(){
+  const pgs=fePages();
+  if(pgs.length<=2)return toast('최소 2페이지는 유지해야 합니다');
+  const p=pgs[feIdx];
+  if(p.type==='contact')return toast('연락처 페이지는 삭제할 수 없습니다');
+  if(p.type==='date')return toast('방문일 페이지는 삭제할 수 없습니다');
+  pgs.splice(feIdx,1);
+  if(feIdx>=pgs.length)feIdx=pgs.length-1;
+  feRender();
+}
+function feRender(){
+  const pgs=fePages();
+  if(feIdx>=pgs.length)feIdx=pgs.length-1;
+  const p=pgs[feIdx];
+  $('fe-pos').textContent=(feIdx+1)+' / '+pgs.length;
+  /* 통합 화면: 손님이 보는 그 화면 그대로, 텍스트를 직접 클릭해 수정 */
+  let pv='<div class="fe-eyebrow">'+(FE_EYEBROW[p.type]||'INFO')+'</div>'
+    +'<div class="fe-q fe-edit-txt'+(p.q?'':' fe-empty')+'" contenteditable="true" data-k="q" spellcheck="false">'+esc3(p.q||'눌러서 질문 입력')+'</div>'
+    +'<div class="fe-sub fe-edit-txt'+(p.sub?'':' fe-empty')+'" contenteditable="true" data-k="sub" spellcheck="false">'+esc3(p.sub||'눌러서 안내 문구 입력')+'</div>';
+  if(p.type==='select'){
+    pv+='<div class="fe-opts">';
+    (p.opts||[]).forEach((o,i)=>{
+      const pr=String(o).split('|');
+      pv+='<div class="fe-opt"><span class="fe-mark"></span><span class="fe-t">'
+        +'<b class="fe-edit-txt'+(pr[0]?'':' fe-empty')+'" contenteditable="true" data-oi="'+i+'" data-op="0" spellcheck="false">'+esc3(pr[0]||'선택지')+'</b>'
+        +'<span class="fe-edit-txt'+(pr[1]?'':' fe-empty')+'" contenteditable="true" data-oi="'+i+'" data-op="1" spellcheck="false">'+esc3(pr[1]||'설명 (선택)')+'</span>'
+        +'</span><button class="fe-x" onclick="feOptDelAt('+i+')" title="이 선택지 삭제">×</button></div>';
+    });
+    pv+='</div>';
+  }else if(p.type==='date'){
+    const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+    const first=new Date(y,m,1).getDay();
+    const dim=new Date(y,m+1,0).getDate();
+    const tk=y+'-'+String(m+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    let mon='';['일','월','화','수','목','금','토'].forEach((w,i)=>{mon+='<span class="w'+(i===0?' sun':'')+'">'+w+'</span>';});
+    let cells='';for(let i=0;i<first;i++)cells+='<span class="d out">·</span>';
+    for(let d=1;d<=dim;d++){const k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');cells+='<span class="d'+(k===tk?' today':'')+'">'+d+'</span>';}
+    pv+='<div class="fe-mcal"><div class="mcal-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><button type="button">‹</button><b style="font-size:12.5px">'+y+'년 '+(m+1)+'월</b><button type="button">›</button></div><div class="fe-mcal-grid">'+mon+cells+'</div></div><div class="fe-chips">';
+    (p.opts&&p.opts.length?p.opts:['오전','오후','저녁','시간무관']).forEach((o,i)=>{
+      const pr=String(o).split('|');
+      pv+='<span class="fe-chip"><span class="fe-edit-txt'+(pr[0]?'':' fe-empty')+'" contenteditable="true" data-oi="'+i+'" data-op="0" spellcheck="false">'+esc3(pr[0]||'시간대')+'</span>'
+        +(pr[1]?'<small class="fe-edit-txt" contenteditable="true" data-oi="'+i+'" data-op="1" spellcheck="false">'+esc3(pr[1])+'</small>':'')
+        +'</span>';
+    });
+    pv+='</div>';
+  }else if(p.type==='contact'){
+    pv+='<div class="fe-inputs"><span class="fe-flabel">이름</span><span class="fe-fake">홍길동</span><span class="fe-flabel">연락처</span><span class="fe-fake">010-1234-5678</span></div>';
+  }else if(p.type==='memo'){
+    pv+='<div class="fe-fake" style="min-height:80px;text-align:left">예) 분양가 안내, 주차 대수 등</div>';
+  }
+  pv+='<div class="fe-autobar">'+(p.type==='select'?'<label class="fe-auto"><input type="checkbox" '+(p.auto?'checked':'')+' onchange="feSetAuto(this.checked)"> 선택하면 자동으로 다음 페이지</label>':'')+'</div>';
+  pv+='<div class="fe-btnrow"><span class="fe-backdemo">← 이전</span><span class="fe-nextdemo">'+(feIdx===pgs.length-1?'작성 완료 ✓':'다음')+'</span></div>';
+  $('fe-stage').innerHTML=pv;
+  bindFeEdit();
+  $('fe-prev').disabled=feIdx===0;
+  $('fe-next').disabled=feIdx===pgs.length-1;
+  const locked=(p.type==='contact'||p.type==='date');
+  $('fe-del').disabled=locked;
+  const oa=$('fe-optadd');if(oa){oa.style.display=(p.type==='select'||p.type==='date')?'':'none';oa.disabled=locked;}
+  const pa=$('fe-add');if(pa)pa.disabled=false;
+}
+/* 미리보기 안의 텍스트를 직접 수정 → 데이터에 즉시 반영 */
+function bindFeEdit(){
+  const p=fePages()[feIdx];
+  $('fe-stage').querySelectorAll('[contenteditable]').forEach(el=>{
+    el.addEventListener('input',()=>{
+      const k=el.dataset.k, oi=el.dataset.oi, op=el.dataset.op;
+      if(k!==undefined){p[k]=el.textContent;}
+      else if(oi!==undefined){
+        const i=+oi, part=+op;
+        if(!p.opts)p.opts=[];
+        const pr=String(p.opts[i]||'').split('|');
+        pr[part]=el.textContent.trim();
+        p.opts[i]=(pr[0]||'')+(pr[1]?'|'+pr[1]:'');
+      }
+    });
+    el.addEventListener('focus',()=>{if(el.classList.contains('fe-empty')){el.classList.remove('fe-empty');if(el.textContent.indexOf('눌러서')===0||el.textContent==='선택지'||el.textContent==='설명 (선택)'||el.textContent==='시간대')el.textContent='';}});
+    el.addEventListener('blur',()=>{if(!el.textContent.trim()){el.classList.add('fe-empty');el.textContent=el.dataset.k==='q'?'눌러서 질문 입력':el.dataset.k==='sub'?'눌러서 안내 문구 입력':el.dataset.op==='0'?(p.type==='date'?'시간대':'선택지'):'설명 (선택)';}});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}});
+  });
+}
+function feSetAuto(v){fePages()[feIdx].auto=v;}
+function feOptDelAt(i){
+  const p=fePages()[feIdx];
+  if(!p.opts||p.opts.length<=1)return toast('최소 1개는 유지해야 합니다');
+  p.opts.splice(i,1);feRender();
+}
+function feOptAdd(){
+  const p=fePages()[feIdx];
+  if(!p.opts)p.opts=[];
+  if(p.opts.length>=12)return toast('최대 12개까지입니다');
+  p.opts.push(p.type==='date'?'시간대 '+(p.opts.length+1):'선택지 '+(p.opts.length+1));
+  feRender();
+  const eds=$('fe-stage').querySelectorAll('[data-oi]');
+  if(eds.length){const last=eds[eds.length-1];last.focus();}
+}
+function renderForms(){
+  let html=`<div class="empty">현장별 고객 문의 양식을 만들어 관리합니다.<br>양식을 만들면 손님에게 보낼 <b>링크·QR</b>이 자동 생성되고<br><b>페이지별로 질문·선택지를 자유롭게 수정</b>하면<br>링크에 바로 반영됩니다.</div>`
+    +`<button class="btn btn-primary" style="width:100%;margin:10px 0" onclick="newForm()">＋ 새 양식 만들기</button>`;
+  if(!forms.length)html+=`<div class="empty">아직 양식이 없습니다.<br>위 버튼으로 첫 양식을 만들어 보세요.</div>`;
+  forms.forEach(f=>{
+    const link=formLink(f.code);
+    const pgs=pagesOf(f);
+    html+=`<div style="background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-top:10px">`
+      +`<div style="display:flex;gap:12px;align-items:flex-start">`
+      +`<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(link)}" alt="QR" style="width:84px;height:84px;border-radius:8px;border:1px solid var(--line);flex:none">`
+      +`<div style="flex:1;min-width:0">`
+      +`<b style="font-size:15px">${esc3(f.site)||'(이름없음)'}</b> <span style="font-size:11px;font-weight:800;color:${f.active?'var(--green)':'var(--sub)'}">${f.active?'● 사용중':'■ 중지'}</span>`
+      +`<div style="font-size:12px;color:var(--sub);margin-top:4px;word-break:break-all">${esc3(link)}</div>`
+      +`</div></div>`
+      +`<div style="display:grid;gap:8px;margin-top:10px">`
+      +`<input id="fs-site-${f.code}" value="${esc3(f.site)}" placeholder="단지 · 현장 이름" style="${IS}">`
+      +`<input id="fs-phone-${f.code}" value="${esc3(f.agent_phone)}" placeholder="담당자 전화번호 (문자 받을 번호)" style="${IS}">`
+      +`</div>`
+      +`<button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:13.5px;font-weight:800" onclick="openFormEditor('${f.code}')">✏️ 양식 편집 · 미리보기 — 페이지 ${pgs.length}개</button>`
+      +`<div style="display:flex;gap:6px;margin-top:10px">`
+      +`<button class="btn btn-primary" style="flex:1.2;padding:10px 0;font-size:13.5px" onclick="saveForm('${f.code}')">저장</button>`
+      +`<button class="btn btn-ghost" style="flex:1;padding:10px 0;font-size:13.5px" onclick="copyFormLink('${f.code}')">링크 복사</button>`
+      +`<button class="btn btn-ghost" style="flex:1;padding:10px 0;font-size:13.5px" onclick="toggleForm('${f.code}',${!f.active})">${f.active?'중지':'사용'}</button>`
+      +`<button class="btn btn-danger" style="flex:1;padding:10px 0;font-size:13.5px" onclick="delForm('${f.code}')">삭제</button>`
+      +`</div></div>`;
+  });
+  $('forms-list').innerHTML=html;
+}
+function openForms(){histPush();loadForms();$('fsheet').classList.add('on');}
+function closeForms(){$('fsheet').classList.remove('on');histPop();}
+async function newForm(){
+  if(!sb||!uid)return toast('로그인이 필요합니다');
+  const g=await sb.auth.getUser();
+  if(!g.data||!g.data.user)return toast('다시 로그인해 주세요');
+  const code=formCode();
+  const{error}=await sb.from('forms').insert({
+    code:code,user_id:g.data.user.id,site:'새 현장',agent_phone:'',
+    types:['59㎡(A)','59㎡(B)','84㎡(A)','84㎡(B)','상관없음'],days:7,intro:'',active:true
+  });
+  if(error)return toast('만들기 실패 — SQL 설정(webform-setup.sql)을 실행했는지 확인해 주세요');
+  toast('양식을 만들었습니다 — 아래에서 내용을 채우세요');
+  loadForms();
+}
+async function saveForm(code){
+  if(!sb)return;
+  const f=forms.find(x=>x.code===code);if(!f)return;
+  const pgs=pagesOf(f);
+  pgs.forEach((p,i)=>{
+    p.q=($('fp-q-'+code+'-'+i)||{value:p.q}).value.trim();
+    p.sub=($('fp-sub-'+code+'-'+i)||{value:p.sub}).value.trim();
+    const oe=$('fp-opts-'+code+'-'+i);
+    if(oe&&p.type==='select')p.opts=oe.value.split(',').map(x=>x.trim()).filter(Boolean);
+  });
+  if(!pgs.some(p=>p.type==='contact'))return toast('연락처 페이지는 필수입니다');
+  if(!pgs.some(p=>p.type==='date'))return toast('방문일 페이지는 필수입니다');
+  const tpg=pgs.find(p=>p.id==='type');
+  const patch={
+    site:$('fs-site-'+code).value.trim(),
+    agent_phone:$('fs-phone-'+code).value.trim(),
+    days:(forms[code]&&forms[code].days)||7,
+    pages:pgs,
+    types:tpg?tpg.opts.map(o=>String(o).split('|')[0]):(f.types||[]),
+    intro:tpg?tpg.sub:'',
+    updated_at:new Date().toISOString()
+  };
+  if(!patch.site)return toast('단지 이름을 입력해 주세요');
+  const{error}=await sb.from('forms').update(patch).eq('code',code);
+  if(error)return toast('저장 실패 — SQL 설정(webform-setup.sql)의 pages 컬럼 추가를 실행했는지 확인해 주세요');
+  Object.assign(f,patch);
+  renderForms();toast('저장했습니다 — 링크에 즉시 반영됩니다');
+}
+async function toggleForm(code,val){
+  if(!sb)return;
+  const{error}=await sb.from('forms').update({active:val,updated_at:new Date().toISOString()}).eq('code',code);
+  if(error)return toast('변경 실패');
+  loadForms();
+}
+async function delForm(code){
+  if(!confirm('이 양식을 삭제할까요?\n손님에게 보낸 링크는 더 이상 열리지 않습니다.'))return;
+  if(!sb)return;
+  const{error}=await sb.from('forms').delete().eq('code',code);
+  if(error)return toast('삭제 실패');
+  loadForms();toast('삭제했습니다');
+}
+function copyFormLink(code){
+  const link=formLink(code);
+  const ok=()=>toast('링크를 복사했습니다');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(link).then(ok,ok);
+  else{const t=document.createElement('textarea');t.value=link;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();ok();}
+}
+
 /* ────────── 엑셀 저장 (의존성 없는 최소 XLSX 생성기) ────────── */ /*XLSX_BEGIN*/
 const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c;}return t;})();
 function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
