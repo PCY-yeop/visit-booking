@@ -695,11 +695,6 @@ function saveMemo(){
   it.notes[memoTab]=$('m-text').value.trim();
   save();closeS();render();toast('메모를 저장했습니다');
 }
-function pushMsg(t){
-  let b=document.getElementById('pushmsg');
-  if(!b){b=document.createElement('div');b.id='pushmsg';b.style.cssText='position:fixed;left:0;right:0;bottom:70px;margin:0 12px;background:#fff3cd;color:#6b4d00;border:1.5px solid #e6c86a;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:700;z-index:60;word-break:keep-all;box-shadow:0 4px 14px rgba(0,0,0,.15)';b.onclick=()=>b.remove();document.body.appendChild(b);}
-  b.textContent='🔔 '+t;
-}
 function webAlert(fresh){
   try{navigator.vibrate&&navigator.vibrate([300,150,300]);}catch(_){}
   try{
@@ -985,11 +980,11 @@ async function setupPush(){
   try{
     let reg=null;
     for(let i=0;i<10&&!reg;i++){reg=await navigator.serviceWorker.getRegistration();if(!reg)await wait(700);}
-    if(!reg){pushMsg('푸시 준비 실패: 서비스워커 미등록 — 앱 삭제 후 재설치 필요');return;}
-    if(typeof Notification==='undefined'){pushMsg('푸시 미지원 브라우저입니다 — 크롬 또는 삼성인터넷으로 열어주세요');return;}
+    if(!reg)return;
+    if(typeof Notification==='undefined')return;
     let perm=Notification.permission;
     if(perm==='default'){perm=await Notification.requestPermission();}
-    if(perm!=='granted'){pushMsg('알림 권한이 허용되지 않았습니다 — 브라우저 설정에서 이 사이트 알림을 허용해 주세요');return;}
+    if(perm!=='granted')return;
     let sub=null;
     try{sub=await reg.pushManager.getSubscription();}catch(e){}
     if(sub){
@@ -1001,13 +996,11 @@ async function setupPush(){
     }
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:PUSH_PUB});
     const gu=await sb.auth.getUser();
-    if(!gu.data||!gu.data.user)return pushMsg('푸시 등록 실패: 로그인 세션 없음 — 다시 로그인해 주세요');
+    if(!gu.data||!gu.data.user)return;
     /* 같은 폰에서 다른 계정으로 로그인해도 등록되도록 서버 함수로 소유자를 넘겨받음 (함수가 없으면 예전 방식 사용) */
     let r=await sb.rpc('claim_push_sub',{p_endpoint:sub.endpoint,p_sub:sub.toJSON()});
     if(r.error&&/claim_push_sub|schema cache/i.test(r.error.message||''))r=await sb.from('push_subs').upsert({endpoint:sub.endpoint,user_id:gu.data.user.id,sub:sub.toJSON()});
-    if(r.error)pushMsg('푸시 등록 실패: '+r.error.message);
-    else{const pb=document.getElementById('pushmsg');if(pb)pb.remove();}
-  }catch(e){pushMsg('푸시 등록 오류: '+(e&&e.message||e));}
+  }catch(e){/* 알림 등록 실패는 화면에 표시하지 않음 */}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&uid){setTimeout(setupPush,2000);}});
 addEventListener('load',()=>{if(uid)setTimeout(setupPush,2000);});

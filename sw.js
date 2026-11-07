@@ -1,5 +1,5 @@
 /* 방문예약 서비스워커 — 앱 파일 캐시(오프라인 실행) + CDN 라이브러리 캐시 */
-const CACHE = 'reserve-sms-v65';
+const CACHE = 'reserve-sms-v66';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
